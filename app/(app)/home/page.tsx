@@ -7,6 +7,7 @@ import { CashChart } from "@/components/CashChart";
 import { VerdictBadge } from "@/components/Verdict";
 import { computeImpact } from "@/lib/data/insights";
 import { DEMO_IDS } from "@/lib/demo/demo-data";
+import { CountUp } from "@/components/CountUp";
 
 export const dynamic = "force-dynamic";
 
@@ -33,15 +34,27 @@ export default async function HomePage() {
 
   return (
     <main>
-      <p className="muted" style={{ margin: 0 }}>
-        {business.name}
-      </p>
-      <p className="big-number num" style={{ margin: "0.35rem 0 0.25rem" }}>
-        {formatRand(outlook.startingBalanceCents)}
-      </p>
-      <p className="muted small" style={{ marginTop: 0 }}>
-        Cash on hand today
-      </p>
+      <section className="hero-card">
+        <div className="hero-top">
+          <span className="muted small">{business.name}</span>
+          <span className="chip">
+            <span className="live-dot" aria-hidden="true" />
+            Live forecast
+          </span>
+        </div>
+        <p className="big-number" style={{ margin: "0.9rem 0 0.2rem" }}>
+          <CountUp cents={outlook.startingBalanceCents} />
+        </p>
+        <p className="muted small" style={{ margin: 0 }}>
+          Cash on hand today
+        </p>
+        <div style={{ margin: "0.9rem -0.25rem 0" }}>
+          <CashChart id="hero" series={series30} bufferCents={business.safetyBufferCents} compact onDark />
+        </div>
+        <p className="small" style={{ margin: "0.4rem 0 0.4rem", color: "rgba(238,246,245,0.8)" }}>
+          Lowest in the next 30 days: <strong className="num">{formatRand(outlook.minBalanceCents)}</strong> on {formatShortDate(outlook.minBalanceDate)}
+        </p>
+      </section>
 
       {showTour && (
         <Link href={`/orders/${DEMO_IDS.wedding}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
@@ -56,9 +69,7 @@ export default async function HomePage() {
 
       {impact.shortfallsSpotted > 0 && (
         <p className="impact">
-          <span className="big-number num" style={{ fontSize: "1.8rem" }}>
-            {impact.shortfallsSpotted}
-          </span>
+          <span className="impact-ring num">{impact.shortfallsSpotted}</span>
           <span className="small">
             cash shortfall{impact.shortfallsSpotted === 1 ? "" : "s"} spotted before you said yes, worth{" "}
             <strong className="num">{formatRand(impact.cashAtRiskCents)}</strong>
@@ -72,7 +83,7 @@ export default async function HomePage() {
 
       <section className="panel">
         <p className="label" style={{ marginTop: 0 }}>
-          Next 30 days
+          Your next 30 days, day by day
         </p>
         <CashChart id="home" series={series30} bufferCents={business.safetyBufferCents} />
         <p className="small muted" style={{ marginBottom: 0 }}>

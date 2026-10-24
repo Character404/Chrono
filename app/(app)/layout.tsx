@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireBusiness } from "@/lib/auth/guards";
 import { logout } from "@/app/actions/auth";
+import { NavTabs } from "@/components/NavTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -19,15 +20,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </button>
         </form>
       </header>
-      <nav className="tabs" aria-label="Main">
-        <Link href="/home">Home</Link>
-        <Link href="/orders/new">New order</Link>
-        <Link href="/customers">Customers</Link>
-        <Link href="/commitments">Payments</Link>
-      </nav>
+      <NavTabs />
       {user.isDemo && (
         <p className="demo-flag">
-          You&apos;re exploring the demo: {business.name}. Everything here is made-up data and refreshes each day.
+          <span className="live-dot" aria-hidden="true" />
+          Demo: {business.name}. Made-up data that refreshes each day.
         </p>
       )}
       {children}

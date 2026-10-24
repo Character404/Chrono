@@ -12,6 +12,7 @@ import { AnalysisDetails } from "@/components/AnalysisDetails";
 import { WhatIf } from "@/components/WhatIf";
 import { RecordActuals } from "@/components/RecordActuals";
 import { TourStep } from "@/components/Tour";
+import { Thinking } from "@/components/Thinking";
 import { shareQuote, stopSharingQuote } from "@/app/actions/records";
 import { DEMO_IDS } from "@/lib/demo/demo-data";
 import { headers } from "next/headers";
@@ -70,6 +71,28 @@ export default async function OrderPage({
   const balance = order.payments.find((p) => p.kind !== "DEPOSIT");
   const statusNote = STATUS_NOTE[order.status];
 
+  // What Chrono actually checked, shown step by step before the verdict.
+  const firstName = row.customer?.name.split(" ")[0] ?? "this customer";
+  const lateness = analysis.predictions.find((p) => p.kind === "CUSTOMER_LATENESS" && p.orderId === order.id);
+  const payday = analysis.predictions.find((p) => p.kind === "PAYDAY_PATTERN" && p.orderId === order.id);
+  const bias = analysis.predictions.find((p) => p.kind === "COST_BIAS");
+  const accepted = ctx.orders.filter((o) => o.status === "ACCEPTED" && o.id !== order.id).length;
+  const steps = [
+    `Added ${ctx.commitments.length} regular payment${ctx.commitments.length === 1 ? "" : "s"} and ${accepted} accepted order${accepted === 1 ? "" : "s"}`,
+    lateness
+      ? `Checked ${firstName}'s last ${lateness.dataPoints} payments: usually late`
+      : payday
+        ? `Checked when your customers usually pay: mostly at month-end`
+        : `Checked how ${firstName} has paid before`,
+    bias ? `Adjusted costs using your last ${bias.dataPoints} recorded costs` : `Checked your costs against past orders`,
+    `Forecast your cash for ${primary.series.length} days, one day at a time`,
+    analysis.deposit.status === "INCREASE" && analysis.deposit.recommendedCents !== null
+      ? `Found the smallest safe deposit: ${formatRand(analysis.deposit.recommendedCents)}`
+      : analysis.deposit.status === "CANNOT_FIX"
+        ? "Tested every deposit up to the full order value"
+        : "Confirmed your deposit is enough",
+  ];
+
   return (
     <main>
       <Link href="/home" className="small muted">
@@ -94,6 +117,7 @@ export default async function OrderPage({
         </p>
       )}
 
+      <Thinking runKey={`${order.id}-${order.status}-${usePredictions}`} steps={steps}>
       {tour && (
         <TourStep step={1} total={5}>
           Lerato typed this order in and it looked fine. Chrono checked how Thabo actually pays and found a problem before she said yes.
@@ -123,6 +147,8 @@ export default async function OrderPage({
       )}
 
       <AnalysisDetails analysis={analysis} />
+
+      </Thinking>
 
       {order.status === "DRAFT" && (
         <div style={{ marginTop: "1.5rem" }}>

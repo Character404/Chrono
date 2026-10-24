@@ -12,6 +12,7 @@
  *   once Chrono adjusts for how Thabo really pays.
  */
 import { analyzeOrder } from "../engine/analyze";
+import { forecast } from "../engine/forecast";
 import { addDays, dateParts, makeDateClamped, type ISODate } from "../engine/dates";
 import { rand } from "../engine/money";
 import type { BusinessInput, CommitmentInput, CostCategory, OrderInput } from "../engine/types";
@@ -159,9 +160,9 @@ function buildWithOpening(today: ISODate, openingRands: number): DemoData {
       status: "ACCEPTED",
       payments: [
         { id: "demo-lunch-dep", kind: "DEPOSIT", amountCents: rand(1000), expectedDate: d(-1), dateCertainty: "CONFIRMED", receivedDate: d(-1), receivedAmountCents: rand(1000) },
-        { id: "demo-lunch-bal", kind: "BALANCE", amountCents: rand(2500), expectedDate: d(20), dateCertainty: "ESTIMATED" },
+        { id: "demo-lunch-bal", kind: "BALANCE", amountCents: rand(2500), expectedDate: d(16), dateCertainty: "CONFIRMED" },
       ],
-      costs: [{ id: "demo-lunch-cost", description: "Lunch ingredients", category: "INGREDIENTS", estimatedCents: rand(1500), dueDate: d(18), dateCertainty: "ESTIMATED" }],
+      costs: [{ id: "demo-lunch-cost", description: "Lunch ingredients", category: "INGREDIENTS", estimatedCents: rand(1500), dueDate: d(18), dateCertainty: "CONFIRMED" }],
     },
   ];
 
@@ -238,7 +239,10 @@ export function buildDemoData(today: ISODate): DemoData {
     const data = buildWithOpening(today, opening);
     const a = analyzeOrder(demoWeddingInput(data, today));
     const buffer = data.business.safetyBufferCents;
+    // The business must be healthy on its own, so only the wedding causes the problem.
+    const baseline = forecast({ ...demoWeddingInput(data, today), proposedOrder: null });
     if (
+      baseline.minBalanceCents >= buffer + rand(marginRands) &&
       a.asEntered.verdict === "SAFE" &&
       a.asEntered.minBalanceCents >= buffer + rand(marginRands) &&
       a.primary.verdict === "SHORTFALL" &&

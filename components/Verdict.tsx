@@ -1,11 +1,22 @@
 import { VERDICT_LABEL, type Verdict as VerdictKind } from "@/lib/engine";
 
+const ICON: Record<VerdictKind, string> = { SAFE: "✓", TIGHT: "!", SHORTFALL: "!" };
+
 export function VerdictBand({ verdict, headline, note }: { verdict: VerdictKind; headline: string; note?: string }) {
   return (
     <section className={`verdict verdict-${verdict}`} aria-live="polite">
-      {note && <p className="small muted" style={{ margin: 0 }}>{note}</p>}
-      <p className="verdict-word">{VERDICT_LABEL[verdict]}</p>
-      <p style={{ margin: 0, fontWeight: 600 }}>{headline}</p>
+      {note && (
+        <p className="small muted" style={{ margin: "0 0 0.7rem" }}>
+          {note}
+        </p>
+      )}
+      <div className="verdict-head">
+        <span className="verdict-icon" aria-hidden="true">
+          {ICON[verdict]}
+        </span>
+        <p className="verdict-word">{VERDICT_LABEL[verdict]}</p>
+      </div>
+      <p className="verdict-headline">{headline}</p>
     </section>
   );
 }
