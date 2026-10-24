@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/order-draft";
 import { addDays, analyzeOrder, findDuplicateCost, formatRand, parseRandInput, validateOrder, type CostCategory, type DateCertainty } from "@/lib/engine";
 import { VerdictBadge } from "@/components/Verdict";
+import { CashChart } from "@/components/CashChart";
 
 interface CostForm {
   key: string;
@@ -278,12 +279,28 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
 
       <div className="live-bar" aria-live="polite">
         {analysis ? (
-          <div style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start" }}>
-            <VerdictBadge verdict={analysis.primary.verdict} />
-            <span className="small">{analysis.explanation.headline}</span>
+          <div className="live-row">
+            <div>
+              <span className="live-label">
+                <span className="live-dot" aria-hidden="true" />
+                Live forecast
+              </span>
+              <div key={analysis.primary.verdict} className="pop">
+                <VerdictBadge verdict={analysis.primary.verdict} />
+              </div>
+              <p className="small" style={{ margin: "0.3rem 0 0", fontWeight: 600 }}>
+                {analysis.explanation.headline}
+              </p>
+            </div>
+            <CashChart key={`${analysis.primary.minBalanceCents}-${analysis.primary.series.length}`} id="live" series={analysis.primary.series} bufferCents={ctx.business.safetyBufferCents} compact />
           </div>
         ) : (
-          <span className="small muted">Enter the total and deposit to see a live forecast.</span>
+          <span className="small muted">
+            <span className="live-label" style={{ display: "inline-flex", marginRight: "0.4rem" }}>
+              Live forecast
+            </span>
+            Enter the total and deposit and Chrono starts forecasting as you type.
+          </span>
         )}
       </div>
     </form>

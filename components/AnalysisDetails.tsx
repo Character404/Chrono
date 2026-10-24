@@ -35,6 +35,11 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
             {predictions.map((p) => (
               <li key={`${p.kind}-${p.paymentId ?? p.orderId}`} className="panel">
                 <span className="confidence">
+                  <span className="meter" aria-hidden="true">
+                    <i data-on="true" />
+                    <i data-on={p.confidence !== "LOW"} />
+                    <i data-on={p.confidence === "HIGH"} />
+                  </span>
                   {CONFIDENCE_LABEL[p.confidence]}, from {p.dataPoints} record{p.dataPoints === 1 ? "" : "s"}
                 </span>
                 <p style={{ margin: "0.25rem 0 0" }}>{p.reason}</p>

@@ -7,6 +7,7 @@ Built by BinaryBros for the FNB App of the Year Hackathon 2026 (Youth entreprene
 ## Status
 
 - **Milestone 1:** forecasting engine, intelligence layer, database schema and tests.
+- **Design refresh:** Manrope type, a restrained neutral base with vibrant graphics only (gradient cash lines that turn from emerald to rose as cash runs low), animated charts and count-up numbers, a step-by-step "what Chrono checked" reveal on every order, a live forecast bar with sparkline in the order wizard, and active navigation tabs. All motion respects reduced-motion settings.
 - **Milestone 3:** what-if comparison with "use these terms", recording actual payments and costs (the learning loop), customer pages with payment history and reliability, shareable quote links with WhatsApp sharing, the 60-second judge tour, and the impact counter.
 - **Milestone 2:** login and sign-up, one-tap demo account, business setup, home screen with a 30-day cash chart, the order check wizard with a live forecast, the order result screen, accept and decline, regular payments, and authorisation tests.
 
