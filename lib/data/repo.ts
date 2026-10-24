@@ -95,6 +95,65 @@ export function createRepo(db: Db) {
       return result.count === 1;
     },
 
+    /**
+     * Replaces the payment terms of a DRAFT order (used by "Use these terms" in the what-if).
+     * Returns false when the order isn't a draft in this business.
+     */
+    async replaceDraftPayments(businessId: string, orderId: string, payments: OrderInput["payments"]): Promise<boolean> {
+      const order = await db.order.findFirst({ where: { id: orderId, businessId, status: "DRAFT" } });
+      if (!order) return false;
+      await db.$transaction(async (tx: Db) => {
+        await tx.orderPayment.deleteMany({ where: { orderId } });
+        await tx.orderPayment.createMany({
+          data: payments.map((p) => ({
+            orderId,
+            kind: p.kind,
+            amountCents: p.amountCents,
+            expectedDate: isoToDate(p.expectedDate),
+            dateCertainty: p.dateCertainty,
+            receivedDate: null,
+            receivedAmountCents: null,
+          })),
+        });
+      });
+      return true;
+    },
+
+    // --- Recording what actually happened (feeds the intelligence layer) -----
+    /** Marks a payment as received. Scoped through the payment's order. */
+    async recordPaymentReceived(businessId: string, paymentId: string, receivedDate: ISODate, receivedAmountCents: number): Promise<boolean> {
+      const result = await db.orderPayment.updateMany({
+        where: { id: paymentId, order: { businessId } },
+        data: { receivedDate: isoToDate(receivedDate), receivedAmountCents },
+      });
+      return result.count === 1;
+    },
+
+    /** Marks a cost as paid. Scoped through the cost's order. */
+    async recordCostPaid(businessId: string, costId: string, paidDate: ISODate, paidCents: number): Promise<boolean> {
+      const result = await db.orderCost.updateMany({
+        where: { id: costId, order: { businessId } },
+        data: { paidDate: isoToDate(paidDate), paidCents },
+      });
+      return result.count === 1;
+    },
+
+    // --- Quote links ---------------------------------------------------------
+    async getActiveQuote(businessId: string, orderId: string): Promise<{ id: string; token: string } | null> {
+      return db.quoteShare.findFirst({ where: { orderId, revokedAt: null, order: { businessId } } });
+    },
+
+    async createQuote(businessId: string, orderId: string, token: string): Promise<{ id: string; token: string } | null> {
+      const order = await db.order.findFirst({ where: { id: orderId, businessId } });
+      if (!order) return null;
+      return db.quoteShare.create({ data: { orderId, token, revokedAt: null } });
+    },
+
+    async revokeQuote(businessId: string, quoteId: string): Promise<boolean> {
+      const result = await db.quoteShare.updateMany({ where: { id: quoteId, revokedAt: null, order: { businessId } }, data: { revokedAt: new Date() } });
+      return result.count === 1;
+    },
+
     // --- Commitments -------------------------------------------------------
     async listCommitments(businessId: string): Promise<CommitmentRow[]> {
       return db.commitment.findMany({ where: { businessId }, orderBy: { startDate: "asc" } });

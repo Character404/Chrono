@@ -5,11 +5,13 @@ import { createRepo, forecastInputFor } from "@/lib/data/repo";
 import { analyzeOrder, forecast, formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
 import { CashChart } from "@/components/CashChart";
 import { VerdictBadge } from "@/components/Verdict";
+import { computeImpact } from "@/lib/data/insights";
+import { DEMO_IDS } from "@/lib/demo/demo-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const { business } = await requireBusiness();
+  const { user, business } = await requireBusiness();
   const today = todayInJohannesburg();
   const ctx = await createRepo(prisma).loadContext(business, today);
   const outlook = forecast(forecastInputFor(ctx, null));
@@ -26,6 +28,8 @@ export default async function HomePage() {
   });
   const accepted = ctx.orders.filter((o) => o.status === "ACCEPTED");
   const customerName = (id: string) => ctx.customers.find((c) => c.id === id)?.name ?? "";
+  const impact = computeImpact(ctx);
+  const showTour = user.isDemo && drafts.some((o) => o.id === DEMO_IDS.wedding);
 
   return (
     <main>
@@ -39,7 +43,30 @@ export default async function HomePage() {
         Cash on hand today
       </p>
 
-      <Link href="/orders/new" className="btn btn-wide" style={{ margin: "1rem 0 1.5rem" }}>
+      {showTour && (
+        <Link href={`/orders/${DEMO_IDS.wedding}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
+          <span className="tour-step">60s</span>
+          <span>
+            <strong>New here? Take the 60-second tour.</strong>
+            <br />
+            See how Chrono spots a cash shortfall that Lerato couldn&apos;t see.
+          </span>
+        </Link>
+      )}
+
+      {impact.shortfallsSpotted > 0 && (
+        <p className="impact">
+          <span className="big-number num" style={{ fontSize: "1.8rem" }}>
+            {impact.shortfallsSpotted}
+          </span>
+          <span className="small">
+            cash shortfall{impact.shortfallsSpotted === 1 ? "" : "s"} spotted before you said yes, worth{" "}
+            <strong className="num">{formatRand(impact.cashAtRiskCents)}</strong>
+          </span>
+        </p>
+      )}
+
+      <Link href="/orders/new" className="btn btn-wide" style={{ margin: "0.5rem 0 1.5rem" }}>
         Check a new order
       </Link>
 
