@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatRand } from "@/lib/engine";
+import { formatRand } from "@/lib/engine/money";
 
 /** A rand amount that counts up when it first appears. Instant with reduced motion. */
 export function CountUp({ cents, durationMs = 900 }: { cents: number; durationMs?: number }) {
