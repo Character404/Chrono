@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { commitmentDates, EngineValidationError, findDuplicateCost, forecast, validateOrder } from "../forecast";
 import { recommendDeposit, withDeposit } from "../deposit";
 import { analyzeOrder } from "../analyze";
-import { formatRand, rand } from "../money";
+import { formatRand, parseRandInput, rand } from "../money";
 import { formatShortDate } from "../dates";
 import { baseOrder, day, makeInput, rent, TODAY } from "./fixtures";
 
@@ -198,5 +198,17 @@ describe("Explanations", () => {
     expect(formatRand(rand(5000))).toBe("R5 000");
     expect(formatRand(rand(1234.5))).toBe("R1 234,50");
     expect(formatRand(rand(-200))).toBe("−R200");
+  });
+});
+
+describe("Money input", () => {
+  it("parses what people type into cents", () => {
+    expect(parseRandInput("5000")).toBe(rand(5000));
+    expect(parseRandInput("R5 000")).toBe(rand(5000));
+    expect(parseRandInput("1234,50")).toBe(rand(1234.5));
+    expect(parseRandInput("1234.5")).toBe(rand(1234.5));
+    expect(parseRandInput("abc")).toBeNull();
+    expect(parseRandInput("")).toBeNull();
+    expect(parseRandInput("-5")).toBeNull();
   });
 });
