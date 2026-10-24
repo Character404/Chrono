@@ -33,3 +33,13 @@ export function formatRand(cents: Cents): string {
   const decimals = fraction ? `,${String(fraction).padStart(2, "0")}` : "";
   return `${negative ? "−" : ""}R${grouped}${decimals}`;
 }
+
+/**
+ * Parses what a person types as a rand amount into cents.
+ * Accepts "5000", "5 000", "R5 000", "1234,50", "1234.50". Returns null if it isn't a valid amount.
+ */
+export function parseRandInput(text: string): Cents | null {
+  const cleaned = text.trim().replace(/^R/i, "").replace(/[\s\u00a0]/g, "").replace(",", ".");
+  if (cleaned === "" || !/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
+  return Math.round(Number(cleaned) * 100);
+}

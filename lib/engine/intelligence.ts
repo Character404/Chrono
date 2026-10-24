@@ -53,7 +53,8 @@ export function extractHistory(orders: OrderInput[]): { payments: PaymentRecord[
   const costs: CostRecord[] = [];
   for (const o of orders) {
     for (const p of o.payments) {
-      if (!p.receivedDate || !p.expectedDate) continue;
+      // Deposits are paid when the order is agreed, so they say nothing about how late a customer pays.
+      if (p.kind === "DEPOSIT" || !p.receivedDate || !p.expectedDate) continue;
       payments.push({
         orderId: o.id,
         customerId: o.customerId,
@@ -303,7 +304,7 @@ export function applyPredictions(input: ForecastInput): PredictionResult {
       let extra = 0;
       costs = order.costs.map((c) => {
         if (c.paidDate) return c;
-        const raised = Math.round(c.estimatedCents * (1 + bias.biasRatio));
+        const raised = Math.ceil((c.estimatedCents * (1 + bias.biasRatio)) / 100) * 100; // whole rands
         extra += raised - c.estimatedCents;
         return { ...c, estimatedCents: raised };
       });

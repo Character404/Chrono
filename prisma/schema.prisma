@@ -112,7 +112,7 @@ model Order {
   createdAt  DateTime       @default(now())
   decidedAt  DateTime?
   business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  customer   Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customer   Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   payments   OrderPayment[]
   costs      OrderCost[]
   scenarios  Scenario[]
