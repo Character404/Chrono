@@ -34,6 +34,7 @@ export interface DemoData {
 
 export const DEMO_IDS = {
   wedding: "demo-order-wedding",
+  cake: "demo-order-cake",
   thabo: "demo-cust-thabo",
 } as const;
 
@@ -163,6 +164,21 @@ function buildWithOpening(today: ISODate, openingRands: number): DemoData {
       costs: [{ id: "demo-lunch-cost", description: "Lunch ingredients", category: "INGREDIENTS", estimatedCents: rand(1500), dueDate: d(18), dateCertainty: "ESTIMATED" }],
     },
   ];
+
+  // A small Thabo order whose balance is already overdue, so judges can record it
+  // as received and watch Chrono's picture of Thabo update.
+  accepted.push({
+    id: DEMO_IDS.cake,
+    customerId: DEMO_IDS.thabo,
+    title: "Birthday cake",
+    valueCents: rand(900),
+    status: "ACCEPTED",
+    payments: [
+      { id: "demo-cake-dep", kind: "DEPOSIT", amountCents: rand(300), expectedDate: d(-14), dateCertainty: "CONFIRMED", receivedDate: d(-14), receivedAmountCents: rand(300) },
+      { id: "demo-cake-bal", kind: "BALANCE", amountCents: rand(600), expectedDate: d(-9), dateCertainty: "CONFIRMED" },
+    ],
+    costs: [{ id: "demo-cake-cost", description: "Cake ingredients", category: "OTHER", estimatedCents: rand(350), dueDate: d(-11), dateCertainty: "CONFIRMED", paidDate: d(-11), paidCents: rand(370) }],
+  });
 
   // The headline demo moment.
   const wedding: OrderInput = {

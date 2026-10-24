@@ -7,6 +7,7 @@ Built by BinaryBros for the FNB App of the Year Hackathon 2026 (Youth entreprene
 ## Status
 
 - **Milestone 1:** forecasting engine, intelligence layer, database schema and tests.
+- **Milestone 3:** what-if comparison with "use these terms", recording actual payments and costs (the learning loop), customer pages with payment history and reliability, shareable quote links with WhatsApp sharing, the 60-second judge tour, and the impact counter.
 - **Milestone 2:** login and sign-up, one-tap demo account, business setup, home screen with a 30-day cash chart, the order check wizard with a live forecast, the order result screen, accept and decline, regular payments, and authorisation tests.
 
 ## Demo account
@@ -16,7 +17,7 @@ Press **Try the demo** on the login page, or log in with:
 - Email: `demo@chrono.app`
 - Password: `Chrono2026!`
 
-The demo is Lerato's Kitchen, a catering business in Soshanguve, with four months of made-up history. It refreshes itself once a day so the dates always look current. Open **Wedding catering** to see an order that looks safe as entered but leaves Lerato short of cash once Chrono adjusts for how Thabo really pays.
+On the demo home screen, tap **Take the 60-second tour**. The demo is Lerato's Kitchen, a catering business in Soshanguve, with four months of made-up history. It refreshes itself once a day so the dates always look current. Open **Wedding catering** to see an order that looks safe as entered but leaves Lerato short of cash once Chrono adjusts for how Thabo really pays.
 
 ## Getting started (GitHub Codespaces)
 

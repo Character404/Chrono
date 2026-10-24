@@ -9,6 +9,12 @@ import { decideOrder } from "@/app/actions/orders";
 import { CashChart } from "@/components/CashChart";
 import { VerdictBand } from "@/components/Verdict";
 import { AnalysisDetails } from "@/components/AnalysisDetails";
+import { WhatIf } from "@/components/WhatIf";
+import { RecordActuals } from "@/components/RecordActuals";
+import { TourStep } from "@/components/Tour";
+import { shareQuote, stopSharingQuote } from "@/app/actions/records";
+import { DEMO_IDS } from "@/lib/demo/demo-data";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -25,17 +31,22 @@ export default async function OrderPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; tour?: string; error?: string }>;
 }) {
   const { id } = await params;
-  const { view } = await searchParams;
+  const { view, tour: tourParam, error } = await searchParams;
   const { business } = await requireBusiness();
   const repo = createRepo(prisma);
 
   const row = await repo.getOrder(business.id, id);
   if (!row) notFound();
   const order = orderRowToInput(row);
-  const ctx = await repo.loadContext(business, todayInJohannesburg());
+  const today = todayInJohannesburg();
+  const ctx = await repo.loadContext(business, today);
+  const tour = tourParam === "1" && order.id === DEMO_IDS.wedding;
+  const quote = await repo.getActiveQuote(business.id, order.id);
+  const host = (await headers()).get("host");
+  const quoteUrl = quote && host ? `${host.startsWith("localhost") ? "http" : "https"}://${host}/q/${quote.token}` : null;
   const usePredictions = view !== "entered";
 
   let analysis: OrderAnalysis;
@@ -77,6 +88,17 @@ export default async function OrderPage({
       </p>
 
       {statusNote && <p className="demo-flag">{statusNote}</p>}
+      {error && (
+        <p className="error-box" role="alert">
+          {error}
+        </p>
+      )}
+
+      {tour && (
+        <TourStep step={1} total={5}>
+          Lerato typed this order in and it looked fine. Chrono checked how Thabo actually pays and found a problem before she said yes.
+        </TourStep>
+      )}
 
       <VerdictBand
         verdict={primary.verdict}
@@ -84,11 +106,79 @@ export default async function OrderPage({
         note={changedByPredictions ? `As you entered it: ${VERDICT_LABEL[asEntered.verdict]}. Adjusted for how your customers really pay:` : undefined}
       />
 
+      {tour && (
+        <TourStep step={2} total={5}>
+          The dashed line is the order as entered. The solid line is Chrono&apos;s forecast: rent goes out before Thabo&apos;s late balance arrives, and the cash dips below R0.
+        </TourStep>
+      )}
+
       <section className="panel" style={{ marginTop: "1rem" }}>
         <CashChart id="order" series={primary.series} compare={changedByPredictions ? asEntered.series : undefined} bufferCents={business.safetyBufferCents} />
       </section>
 
+      {tour && (
+        <TourStep step={3} total={5}>
+          Chrono works out the smallest deposit that keeps Lerato safe, and explains every number. Try your own deposit in the what-if below.
+        </TourStep>
+      )}
+
       <AnalysisDetails analysis={analysis} />
+
+      {order.status === "DRAFT" && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <WhatIf ctx={ctx} order={order} recommendedCents={analysis.deposit.status === "INCREASE" ? analysis.deposit.recommendedCents : null} canApply />
+        </div>
+      )}
+
+      {(order.status === "ACCEPTED" || order.status === "COMPLETED") && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <RecordActuals order={order} today={today} />
+        </div>
+      )}
+
+      {(order.status === "DRAFT" || order.status === "ACCEPTED") && (
+        <section className="panel" id="quote" style={{ marginTop: "1.5rem" }}>
+          <h2 className="h2" style={{ marginTop: 0 }}>
+            Send the customer a quote
+          </h2>
+          {quoteUrl && quote ? (
+            <>
+              <p className="small muted" style={{ marginTop: 0 }}>
+                Anyone with this link can see the order name, total, deposit and payment dates. Nothing else.
+              </p>
+              <p className="quote-link num">{quoteUrl}</p>
+              <div className="grid-2">
+                <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(`Here is your quote from ${business.name}: ${quoteUrl}`)}`} target="_blank" rel="noopener noreferrer">
+                  Share on WhatsApp
+                </a>
+                <form action={stopSharingQuote}>
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <input type="hidden" name="quoteId" value={quote.id} />
+                  <button className="btn btn-quiet btn-wide" type="submit">
+                    Stop sharing
+                  </button>
+                </form>
+              </div>
+            </>
+          ) : (
+            <form action={shareQuote}>
+              <input type="hidden" name="orderId" value={order.id} />
+              <p className="small muted" style={{ marginTop: 0 }}>
+                Create a link showing the total, the deposit you need and when payments are due.
+              </p>
+              <button className="btn btn-quiet btn-wide" type="submit">
+                Create quote link
+              </button>
+            </form>
+          )}
+        </section>
+      )}
+
+      {tour && (
+        <TourStep step={4} total={5}>
+          Chrono gets smarter with every payment recorded. <Link href={`/customers/${DEMO_IDS.thabo}?tour=1`}>See what Chrono knows about Thabo</Link>
+        </TourStep>
+      )}
 
       <p className="small" style={{ marginTop: "1.25rem" }}>
         {usePredictions ? (

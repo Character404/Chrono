@@ -285,7 +285,8 @@ export function applyPredictions(input: ForecastInput): PredictionResult {
           reason = `${Math.round(payday.shareInWindow * 100)}% of your payments arrive between the ${windowStart}th and the 1st.`;
         }
       }
-      if (!kind || !confidence || target === p.expectedDate) return p;
+      // Overdue payments are already counted from today, so a shift that still lands in the past changes nothing.
+      if (!kind || !confidence || target === p.expectedDate || target <= input.today) return p;
       predictions.push({
         kind,
         orderId: order.id,

@@ -75,6 +75,42 @@ describe("Authorisation: one business can never reach another business's data", 
   });
 });
 
+describe("Authorisation: recording payments, changing terms and quote links", () => {
+  it("cannot mark another business's payment as received or cost as paid", async () => {
+    const { repo, db, bOrder, aOrder } = await twoBusinesses();
+    const bPayment = db.store.orderPayment.find((p: any) => p.orderId === bOrder.id);
+    const bCost = db.store.orderCost.find((c: any) => c.orderId === bOrder.id);
+    expect(await repo.recordPaymentReceived("biz-A", bPayment.id, "2026-11-20", 400000)).toBe(false);
+    expect(await repo.recordCostPaid("biz-A", bCost.id, "2026-11-20", 320000)).toBe(false);
+    expect(bPayment.receivedDate ?? null).toBeNull();
+
+    const aPayment = db.store.orderPayment.find((p: any) => p.orderId === aOrder.id);
+    expect(await repo.recordPaymentReceived("biz-A", aPayment.id, "2026-11-20", 100000)).toBe(true);
+    expect(aPayment.receivedDate.toISOString().slice(0, 10)).toBe("2026-11-20");
+  });
+
+  it("cannot change the terms of another business's order, or of an accepted order", async () => {
+    const { repo, db, bOrder, aOrder } = await twoBusinesses();
+    const terms = order("x").payments;
+    expect(await repo.replaceDraftPayments("biz-A", bOrder.id, terms)).toBe(false);
+    expect(await repo.replaceDraftPayments("biz-A", aOrder.id, terms)).toBe(true);
+    await repo.setOrderStatus("biz-A", aOrder.id, "ACCEPTED");
+    expect(await repo.replaceDraftPayments("biz-A", aOrder.id, terms)).toBe(false);
+    expect(db.store.orderPayment.filter((p: any) => p.orderId === aOrder.id)).toHaveLength(2);
+  });
+
+  it("cannot create, see or revoke quote links for another business's order", async () => {
+    const { repo, aOrder, bOrder } = await twoBusinesses();
+    expect(await repo.createQuote("biz-A", bOrder.id, "tok-b")).toBeNull();
+    const q = (await repo.createQuote("biz-A", aOrder.id, "tok-a"))!;
+    expect((await repo.getActiveQuote("biz-A", aOrder.id))?.token).toBe("tok-a");
+    expect(await repo.getActiveQuote("biz-B", aOrder.id)).toBeNull();
+    expect(await repo.revokeQuote("biz-B", q.id)).toBe(false);
+    expect(await repo.revokeQuote("biz-A", q.id)).toBe(true);
+    expect(await repo.getActiveQuote("biz-A", aOrder.id)).toBeNull();
+  });
+});
+
 describe("Saving orders", () => {
   it("stores payments and costs with date-only values and reads them back for the engine", async () => {
     const { repo, aOrder } = await twoBusinesses();
