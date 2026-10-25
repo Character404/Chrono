@@ -42,10 +42,6 @@ export default async function HomePage() {
       <section className="hero-card">
         <div className="hero-top">
           <span className="muted small">{business.name}</span>
-          <span className="chip">
-            <span className="live-dot" aria-hidden="true" />
-            Live forecast
-          </span>
         </div>
         <p className="big-number" style={{ margin: "0.9rem 0 0.2rem" }}>
           <CountUp cents={outlook.startingBalanceCents} />
