@@ -70,6 +70,11 @@ export async function demoLogin() {
   await openPrivateDemo();
 }
 
+/** Opens a fresh private demo and goes straight into the click-through tour. */
+export async function manualDemo() {
+  await openPrivateDemo("manual-tour");
+}
+
 export async function logout() {
   await destroySession();
   redirect("/login");
