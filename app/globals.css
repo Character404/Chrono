@@ -2028,3 +2028,89 @@ details.more[open] > summary::before {
 .btn-outline:hover {
   background: color-mix(in srgb, var(--brand) 14%, transparent);
 }
+
+/* ---------- Mobile polish ---------- */
+/* The spinner keeps its size everywhere, including inside text-style buttons like Log out. */
+.spinner {
+  display: inline-block;
+  flex: none;
+  vertical-align: -0.15em;
+  margin-right: 0.4rem;
+}
+
+.btn .spinner {
+  margin-right: 0;
+}
+
+.linkish[aria-busy="true"] {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Accept / Decline sits in the page flow, right after "Why"; it no longer follows you down the screen. */
+.decision-bar {
+  position: static;
+  margin-top: 1rem;
+  box-shadow: var(--shadow-1);
+  backdrop-filter: none;
+  background: var(--surface);
+}
+
+@media (min-width: 960px) {
+  .decision-bar {
+    width: auto;
+    margin-left: 0;
+  }
+}
+
+/* Small phones: dates go on their own line in the cash timeline, and the top bar tightens up. */
+@media (max-width: 420px) {
+  .tl-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.15rem;
+  }
+  .tl-date {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+  .topbar .linkish {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.88rem;
+  }
+  .topbar .wordmark {
+    font-size: 1.15rem;
+  }
+}
+
+/* Top bar labels never wrap; the verdict word fits on one line on small phones. */
+.topbar .linkish {
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .verdict-word {
+    font-size: clamp(1.6rem, 8.2vw, 2.1rem);
+    white-space: nowrap;
+  }
+  .verdict-icon {
+    flex: none;
+  }
+  .topbar {
+    gap: 0.25rem;
+  }
+}
+
+/* The tour caption floats beside the highlighted section, so it never covers what's being shown. */
+.autotour[data-floating="true"] {
+  right: auto;
+  bottom: auto;
+  margin: 0;
+  width: min(36rem, calc(100vw - 24px));
+  transition: top 220ms var(--ease), left 220ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autotour[data-floating="true"] {
+    transition: none;
+  }
+}

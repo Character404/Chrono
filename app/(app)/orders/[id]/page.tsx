@@ -190,6 +190,31 @@ export default async function OrderPage({
             <div data-tour="why">
               <KeyMoments story={story} />
             </div>
+            {order.status === "DRAFT" && (
+              <div className="decision-bar" data-tour="decision">
+                <div className="decision-summary">
+                  <VerdictBadge verdict={primary.verdict} />
+                  <span className="small muted num">
+                    {primary.shortfall ? `Short by ${formatRand(primary.shortfall.amountCents)}` : `Lowest ${formatRand(primary.minBalanceCents)}`}
+                  </span>
+                </div>
+                <form action={decideOrder}>
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <input type="hidden" name="decision" value="decline" />
+                  <SubmitButton className="btn btn-quiet" pendingLabel="Declining…">
+                    Decline
+                  </SubmitButton>
+                </form>
+                <form action={decideOrder}>
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <input type="hidden" name="decision" value="accept" />
+                  <SubmitButton className="btn" pendingLabel="Accepting…">
+                    Accept
+                  </SubmitButton>
+                </form>
+              </div>
+            )}
+
           </div>
 
           <div className="col-side">
@@ -274,30 +299,6 @@ export default async function OrderPage({
         </div>
       </Thinking>
 
-      {order.status === "DRAFT" && (
-        <div className="decision-bar" data-tour="decision">
-          <div className="decision-summary">
-            <VerdictBadge verdict={primary.verdict} />
-            <span className="small muted num">
-              {primary.shortfall ? `Short by ${formatRand(primary.shortfall.amountCents)}` : `Lowest ${formatRand(primary.minBalanceCents)}`}
-            </span>
-          </div>
-          <form action={decideOrder}>
-            <input type="hidden" name="orderId" value={order.id} />
-            <input type="hidden" name="decision" value="decline" />
-            <SubmitButton className="btn btn-quiet" pendingLabel="Declining…">
-              Decline
-            </SubmitButton>
-          </form>
-          <form action={decideOrder}>
-            <input type="hidden" name="orderId" value={order.id} />
-            <input type="hidden" name="decision" value="accept" />
-            <SubmitButton className="btn" pendingLabel="Accepting…">
-              Accept
-            </SubmitButton>
-          </form>
-        </div>
-      )}
       {order.status === "DRAFT" && (
         <p className="hint" style={{ textAlign: "center" }}>
           Chrono never decides for you. Accepting adds this order to your forecasts.
