@@ -33,6 +33,11 @@ describe("Cash story", () => {
     expect(back.note).toMatch(/usually pays about 7 days late/);
   });
 
+  it("picks three key moments: the big cost, running out, and the late payment", () => {
+    expect(story.keyMoments.map((r) => r.label)).toEqual(["Ingredients for this order", "Rent", "Thabo pays the balance"]);
+    expect(story.keyMoments[1].runsOut).toBe(true);
+  });
+
   it("explains adjusted costs", () => {
     const ing = story.timeline.find((r) => r.label === "Ingredients for this order")!;
     expect(ing.note).toMatch(/You entered R3 200/);

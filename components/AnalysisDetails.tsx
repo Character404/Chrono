@@ -12,19 +12,8 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
 
   return (
     <>
-      {fixLine && deposit.status === "INCREASE" && (
-        <p className="fix">
-          {keepAmountsTogether(fixLine)}
-          <br />
-          <span className="small muted" style={{ fontWeight: 400 }}>
-            That&apos;s {formatRand((deposit.recommendedCents ?? 0) - deposit.currentDepositCents)} more upfront than you planned.
-          </span>
-        </p>
-      )}
 
-      <details className="more">
-        <summary>See how Chrono worked this out</summary>
-      <ul className="list-plain" style={{ marginTop: "1rem" }}>
+      <ul className="list-plain">
         {lines.map((line) => (
           <li key={line}>{line}</li>
         ))}
@@ -58,7 +47,6 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
         ))}
         <li>{explanation.footnote}</li>
       </ul>
-      </details>
     </>
   );
 }

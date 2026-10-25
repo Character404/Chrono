@@ -1509,3 +1509,120 @@ details.more[open] > summary::before {
   white-space: nowrap;
   text-align: left;
 }
+
+/* ---------- Answer first: verdict fix, one-line checker, folds ---------- */
+.thinking-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  min-height: 1.4rem;
+}
+
+.thinking-line .spinner {
+  color: var(--g-sky);
+}
+
+.tick-done {
+  border-color: var(--g-up);
+  background: var(--g-up);
+  margin-top: 0;
+}
+
+.verdict-fix {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--v) 25%, transparent);
+}
+
+.verdict-fix .btn {
+  width: 100%;
+}
+
+.folds {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.fold {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.1rem;
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fold > summary::after {
+  content: "";
+  margin-left: auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 200ms var(--ease);
+}
+
+.fold[open] > summary::after {
+  transform: rotate(-135deg);
+}
+
+.fold-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: var(--tight-bg);
+  color: var(--tight);
+}
+
+.fold-body {
+  padding: 0 1.1rem 1.1rem;
+}
+
+.fold-body > .panel {
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+}
+
+.col-side .folds {
+  margin-top: 0;
+}
+
+.col-side > .panel + .folds {
+  margin-top: 1rem;
+}
+
+/* Phones: the verdict is already on screen, so the decision bar is just two buttons. */
+@media (max-width: 759px) {
+  .decision-bar {
+    grid-template-columns: 1fr 1fr;
+    padding: 0.5rem;
+  }
+  .decision-summary {
+    display: none;
+  }
+}

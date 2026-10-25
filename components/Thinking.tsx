@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 /**
- * Shows what Chrono actually checked, one step at a time, then reveals the result.
- * The steps describe real work done by the engine. Plays once per order per session,
- * and is instant with reduced motion.
+ * One line that ticks through what Chrono actually checked, then settles to
+ * "Checked N things" and reveals the answer. Plays once per order per session;
+ * instant with reduced motion.
  */
 export function Thinking({ runKey, steps, children }: { runKey: string; steps: string[]; children: React.ReactNode }) {
   const [stage, setStage] = useState(steps.length);
@@ -27,23 +27,28 @@ export function Thinking({ runKey, steps, children }: { runKey: string; steps: s
       i += 1;
       setStage(i);
       if (i >= steps.length) clearInterval(timer);
-    }, 420);
+    }, 320);
     return () => clearInterval(timer);
   }, [runKey, steps.length]);
 
   const ready = stage >= steps.length;
   return (
     <>
-      <ol className="thinking" aria-label="What Chrono checked">
-        {steps.map((s, i) => (
-          <li key={s} data-state={i < stage ? "done" : i === stage ? "active" : "waiting"}>
-            <span className="tick" aria-hidden="true">
-              {i < stage ? "✓" : ""}
+      <p className="thinking-line" aria-live="polite" title={steps.join("\n")}>
+        {ready ? (
+          <>
+            <span className="tick tick-done" aria-hidden="true">
+              ✓
             </span>
-            <span>{s}</span>
-          </li>
-        ))}
-      </ol>
+            Chrono checked {steps.length} things before answering
+          </>
+        ) : (
+          <>
+            <span className="spinner" aria-hidden="true" />
+            {steps[stage]}…
+          </>
+        )}
+      </p>
       <div className="reveal" data-ready={ready}>
         {children}
       </div>
