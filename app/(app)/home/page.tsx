@@ -33,7 +33,8 @@ export default async function HomePage() {
   const showTour = user.isDemo && drafts.some((o) => o.id === DEMO_IDS.wedding);
 
   return (
-    <main>
+    <main className="layout-2">
+      <div className="col-main">
       <section className="hero-card">
         <div className="hero-top">
           <span className="muted small">{business.name}</span>
@@ -56,6 +57,41 @@ export default async function HomePage() {
         </p>
       </section>
 
+
+      <section className="panel" style={{ marginTop: "1rem" }}>
+        <p className="label" style={{ marginTop: 0 }}>
+          Your next 30 days, day by day
+        </p>
+        <CashChart id="home" series={series30} bufferCents={business.safetyBufferCents} />
+        <p className="small muted" style={{ marginBottom: 0 }}>
+          With the orders you&apos;ve accepted and your regular payments, your lowest point is{" "}
+          <strong className="num">{formatRand(outlook.minBalanceCents)}</strong> on {formatShortDate(outlook.minBalanceDate)}.
+        </p>
+      </section>
+
+      <h2 className="h2">Coming up</h2>
+      {upcoming.length === 0 ? (
+        <p className="muted">Nothing due in the next 30 days.</p>
+      ) : (
+        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+          {upcoming.map((e) => (
+            <div key={`${e.refId}-${e.date}`} className="row">
+              <span>
+                {e.label}
+                <br />
+                <span className="small muted">{formatShortDate(e.date)}</span>
+              </span>
+              <strong className="num" style={{ color: e.direction === "IN" ? "var(--safe)" : "var(--ink)" }}>
+                {e.direction === "IN" ? "+" : "−"}
+                {formatRand(e.amountCents)}
+              </strong>
+            </div>
+          ))}
+        </div>
+      )}
+
+      </div>
+      <div className="col-side">
       {showTour && (
         <Link href={`/orders/${DEMO_IDS.wedding}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
           <span className="tour-step">60s</span>
@@ -81,17 +117,6 @@ export default async function HomePage() {
         Check a new order
       </Link>
 
-      <section className="panel">
-        <p className="label" style={{ marginTop: 0 }}>
-          Your next 30 days, day by day
-        </p>
-        <CashChart id="home" series={series30} bufferCents={business.safetyBufferCents} />
-        <p className="small muted" style={{ marginBottom: 0 }}>
-          With the orders you&apos;ve accepted and your regular payments, your lowest point is{" "}
-          <strong className="num">{formatRand(outlook.minBalanceCents)}</strong> on {formatShortDate(outlook.minBalanceDate)}.
-        </p>
-      </section>
-
       <h2 className="h2">Orders waiting for your decision</h2>
       {pending.length === 0 ? (
         <p className="muted">No orders waiting. When a customer asks for something, check it here before you say yes.</p>
@@ -108,27 +133,6 @@ export default async function HomePage() {
               </span>
               {verdict && <VerdictBadge verdict={verdict} />}
             </Link>
-          ))}
-        </div>
-      )}
-
-      <h2 className="h2">Coming up</h2>
-      {upcoming.length === 0 ? (
-        <p className="muted">Nothing due in the next 30 days.</p>
-      ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
-          {upcoming.map((e) => (
-            <div key={`${e.refId}-${e.date}`} className="row">
-              <span>
-                {e.label}
-                <br />
-                <span className="small muted">{formatShortDate(e.date)}</span>
-              </span>
-              <strong className="num" style={{ color: e.direction === "IN" ? "var(--safe)" : "var(--ink)" }}>
-                {e.direction === "IN" ? "+" : "−"}
-                {formatRand(e.amountCents)}
-              </strong>
-            </div>
           ))}
         </div>
       )}
@@ -150,6 +154,7 @@ export default async function HomePage() {
           </div>
         </>
       )}
+      </div>
     </main>
   );
 }

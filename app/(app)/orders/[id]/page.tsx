@@ -7,7 +7,8 @@ import { orderRowToInput } from "@/lib/data/convert";
 import { analyzeOrder, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis } from "@/lib/engine";
 import { decideOrder } from "@/app/actions/orders";
 import { CashChart } from "@/components/CashChart";
-import { VerdictBand } from "@/components/Verdict";
+import { VerdictBadge, VerdictBand } from "@/components/Verdict";
+import { SubmitButton } from "@/components/SubmitButton";
 import { AnalysisDetails } from "@/components/AnalysisDetails";
 import { WhatIf } from "@/components/WhatIf";
 import { RecordActuals } from "@/components/RecordActuals";
@@ -118,6 +119,8 @@ export default async function OrderPage({
       )}
 
       <Thinking runKey={`${order.id}-${order.status}-${usePredictions}`} steps={steps}>
+      <div className="layout-2">
+      <div className="col-main">
       {tour && (
         <TourStep step={1} total={5}>
           Lerato typed this order in and it looked fine. Chrono checked how Thabo actually pays and found a problem before she said yes.
@@ -140,6 +143,8 @@ export default async function OrderPage({
         <CashChart id="order" series={primary.series} compare={changedByPredictions ? asEntered.series : undefined} bufferCents={business.safetyBufferCents} />
       </section>
 
+      </div>
+      <div className="col-side">
       {tour && (
         <TourStep step={3} total={5}>
           Chrono works out the smallest deposit that keeps Lerato safe, and explains every number. Try your own deposit in the what-if below.
@@ -148,7 +153,6 @@ export default async function OrderPage({
 
       <AnalysisDetails analysis={analysis} />
 
-      </Thinking>
 
       {order.status === "DRAFT" && (
         <div style={{ marginTop: "1.5rem" }}>
@@ -180,9 +184,7 @@ export default async function OrderPage({
                 <form action={stopSharingQuote}>
                   <input type="hidden" name="orderId" value={order.id} />
                   <input type="hidden" name="quoteId" value={quote.id} />
-                  <button className="btn btn-quiet btn-wide" type="submit">
-                    Stop sharing
-                  </button>
+                  <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Stopping…">Stop sharing</SubmitButton>
                 </form>
               </div>
             </>
@@ -192,9 +194,7 @@ export default async function OrderPage({
               <p className="small muted" style={{ marginTop: 0 }}>
                 Create a link showing the total, the deposit you need and when payments are due.
               </p>
-              <button className="btn btn-quiet btn-wide" type="submit">
-                Create quote link
-              </button>
+              <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Creating link…">Create quote link</SubmitButton>
             </form>
           )}
         </section>
@@ -214,21 +214,31 @@ export default async function OrderPage({
         )}
       </p>
 
+      </div>
+      </div>
+      </Thinking>
+
       {order.status === "DRAFT" && (
-        <div className="grid-2" style={{ marginTop: "1.5rem" }}>
+        <div className="decision-bar">
+          <div className="decision-summary">
+            <VerdictBadge verdict={primary.verdict} />
+            <span className="small muted num">
+              {primary.shortfall ? `Short by ${formatRand(primary.shortfall.amountCents)}` : `Lowest ${formatRand(primary.minBalanceCents)}`}
+            </span>
+          </div>
           <form action={decideOrder}>
             <input type="hidden" name="orderId" value={order.id} />
             <input type="hidden" name="decision" value="decline" />
-            <button className="btn btn-quiet btn-wide" type="submit">
+            <SubmitButton className="btn btn-quiet" pendingLabel="Declining…">
               Decline
-            </button>
+            </SubmitButton>
           </form>
           <form action={decideOrder}>
             <input type="hidden" name="orderId" value={order.id} />
             <input type="hidden" name="decision" value="accept" />
-            <button className="btn btn-wide" type="submit">
-              Accept order
-            </button>
+            <SubmitButton className="btn" pendingLabel="Accepting…">
+              Accept
+            </SubmitButton>
           </form>
         </div>
       )}

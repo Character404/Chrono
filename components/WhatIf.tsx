@@ -5,6 +5,7 @@ import { applyTerms } from "@/app/actions/records";
 import { forecastInputFor, type BusinessContext } from "@/lib/data/repo";
 import { analyzeOrder, formatRand, formatShortDate, parseRandInput, withDeposit, type OrderInput, type Verdict } from "@/lib/engine";
 import { VerdictBadge } from "./Verdict";
+import { SubmitButton } from "@/components/SubmitButton";
 
 interface Scenario {
   label: string;
@@ -85,9 +86,7 @@ export function WhatIf({ ctx, order, recommendedCents, canApply }: { ctx: Busine
           <input type="hidden" name="orderId" value={order.id} />
           <input type="hidden" name="deposit" value={String(yourDeposit / 100)} />
           <input type="hidden" name="balanceDate" value={balanceDate} />
-          <button className="btn btn-quiet btn-wide" type="submit">
-            Use your idea as the order&apos;s terms
-          </button>
+          <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Saving…">Use your idea as the order&apos;s terms</SubmitButton>
           <p className="hint" style={{ marginTop: "0.4rem" }}>
             Do this once the customer agrees. You can share the new terms as a quote below.
           </p>

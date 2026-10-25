@@ -2,6 +2,7 @@ import Link from "next/link";
 import { demoLogin, login } from "@/app/actions/auth";
 import { CashChart } from "@/components/CashChart";
 import type { DayPoint } from "@/lib/engine";
+import { SubmitButton } from "@/components/SubmitButton";
 
 /** A made-up month for the hero graphic: looks fine, then dips below R0 before a late payment lands. */
 function heroSeries(): DayPoint[] {
@@ -34,9 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </section>
 
       <form action={demoLogin} style={{ margin: "0 0 1.75rem" }}>
-        <button className="btn btn-wide" type="submit">
-          Try the demo
-        </button>
+        <SubmitButton className="btn btn-wide" pendingLabel="Opening the demo…">Try the demo</SubmitButton>
         <p className="hint" style={{ marginTop: "0.5rem" }}>
           Opens Lerato&apos;s Kitchen, a catering business in Soshanguve, with four months of real-looking history.
         </p>
@@ -60,9 +59,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <label htmlFor="password">Password</label>
             <input className="input" id="password" name="password" type="password" autoComplete="current-password" required minLength={8} />
           </div>
-          <button className="btn btn-quiet btn-wide" type="submit">
-            Log in
-          </button>
+          <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Logging in…">Log in</SubmitButton>
         </form>
         <p className="small muted" style={{ marginBottom: 0 }}>
           New here? <Link href="/signup">Create an account</Link>

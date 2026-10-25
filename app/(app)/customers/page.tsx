@@ -13,7 +13,7 @@ export default async function CustomersPage() {
   const customers = summarizeCustomers(ctx).sort((a, b) => b.reliability.shiftDays - a.reliability.shiftDays || a.name.localeCompare(b.name));
 
   return (
-    <main>
+    <main className="page-narrow">
       <h1 className="h1">Customers</h1>
       <p className="muted" style={{ marginTop: 0 }}>
         How each customer really pays, learned from the payments you record. Chrono uses this in every forecast.

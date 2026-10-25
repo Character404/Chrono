@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth/guards";
 import { setupBusiness } from "@/app/actions/setup";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +40,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
           <input className="input num" id="buffer" name="buffer" inputMode="decimal" defaultValue="500" />
           <span className="hint">The least you want to keep in the business at all times. Chrono warns you when an order takes you below it.</span>
         </div>
-        <button className="btn btn-wide" type="submit">
-          Save and continue
-        </button>
+        <SubmitButton className="btn btn-wide" pendingLabel="Saving…">Save and continue</SubmitButton>
       </form>
     </main>
   );

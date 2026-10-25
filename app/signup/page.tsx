@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signup } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -28,9 +29,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           <input className="input" id="password" name="password" type="password" autoComplete="new-password" required minLength={8} />
           <span className="hint">At least 8 characters.</span>
         </div>
-        <button className="btn btn-wide" type="submit">
-          Create account
-        </button>
+        <SubmitButton className="btn btn-wide" pendingLabel="Creating your account…">Create account</SubmitButton>
       </form>
       <p className="small muted">
         Already have an account? <Link href="/login">Log in</Link>
