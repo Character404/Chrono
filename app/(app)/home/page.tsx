@@ -43,9 +43,8 @@ export default async function HomePage() {
       {showTour && (
         <div className="tour-top">
           <AutoTourButton />
-          <Link href={`/orders/${demoWedding?.id}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
-            <span className="tour-step">60s</span>
-            <strong>Prefer to click through? Take the guided tour.</strong>
+          <Link href={`/orders/${demoWedding?.id}?tour=1`} className="btn btn-outline btn-wide">
+            Manual demo
           </Link>
         </div>
       )}
@@ -67,7 +66,6 @@ export default async function HomePage() {
           Lowest in the next 30 days: <strong className="num">{formatRand(outlook.minBalanceCents)}</strong> on {formatShortDate(outlook.minBalanceDate)}
         </p>
       </section>
-
 
       <section className="panel" style={{ marginTop: "1rem" }}>
         <p className="label" style={{ marginTop: 0 }}>
@@ -140,17 +138,6 @@ export default async function HomePage() {
           </span>
         </p>
       )}
-
-      <Link href="/summary" className="summary-link">
-        <span className="summary-link-icon" aria-hidden="true">
-          ▤
-        </span>
-        <span>
-          <strong>Monthly summary</strong>
-          <br />
-          <span className="small muted">Your month in plain words, ready to share as a PDF.</span>
-        </span>
-      </Link>
 
       <Link href="/orders/new" className="btn btn-wide" style={{ margin: "0.5rem 0 1.5rem" }}>
         Check a new order

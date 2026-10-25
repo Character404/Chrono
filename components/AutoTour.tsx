@@ -369,7 +369,7 @@ export function TourScene({ name, steps }: { name: string; steps: TourScriptStep
 }
 
 /** Starts the tour. The tap also unlocks audio playback (needed on phones). */
-export function AutoTourButton({ className = "btn btn-wide autotour-start" }: { className?: string }) {
+export function AutoTourButton({ className = "btn btn-wide autotour-start", label = "▶ Auto demo" }: { className?: string; label?: string }) {
   const start = () => {
     try {
       const audio = tourAudio();
@@ -392,7 +392,7 @@ export function AutoTourButton({ className = "btn btn-wide autotour-start" }: { 
   };
   return (
     <button type="button" className={className} onClick={start}>
-      ▶ Watch the 90-second tour
+      {label}
     </button>
   );
 }

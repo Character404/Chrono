@@ -12,6 +12,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M3.5 19c.7-3 2.9-4.6 5.5-4.6s4.8 1.6 5.5 4.6M15.5 6.3a3 3 0 0 1 0 5.6M17.5 14.6c1.6.6 2.6 2 3 4.4" />
     </>
   ),
+  summary: (
+    <>
+      <rect x="4.5" y="3.5" width="15" height="17" rx="2.5" />
+      <path d="M8.5 15.5v-3M12 15.5v-6M15.5 15.5v-4.5" />
+    </>
+  ),
   calendar: (
     <>
       <rect x="4" y="5.5" width="16" height="14" rx="2.5" />
@@ -25,6 +31,7 @@ const TABS = [
   { href: "/orders/new", label: "New order", icon: "new" },
   { href: "/customers", label: "Customers", icon: "people" },
   { href: "/commitments", label: "Payments", icon: "calendar" },
+  { href: "/summary", label: "Summary", icon: "summary" },
 ];
 
 /** Top tabs on desktop, an app-style bottom bar with icons on phones. */
