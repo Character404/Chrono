@@ -2,7 +2,7 @@ import { keepAmountsTogether, VERDICT_LABEL, type Verdict as VerdictKind } from 
 
 const ICON: Record<VerdictKind, string> = { SAFE: "✓", TIGHT: "!", SHORTFALL: "!" };
 
-export function VerdictBand({ verdict, headline, note }: { verdict: VerdictKind; headline: string; note?: string }) {
+export function VerdictBand({ verdict, headline, note, children }: { verdict: VerdictKind; headline: string; note?: string; children?: React.ReactNode }) {
   return (
     <section className={`verdict verdict-${verdict}`} aria-live="polite">
       {note && (
@@ -17,6 +17,7 @@ export function VerdictBand({ verdict, headline, note }: { verdict: VerdictKind;
         <p className="verdict-word">{VERDICT_LABEL[verdict]}</p>
       </div>
       <p className="verdict-headline">{keepAmountsTogether(headline)}</p>
+      {children}
     </section>
   );
 }

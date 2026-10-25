@@ -14,8 +14,9 @@ import { WhatIf } from "@/components/WhatIf";
 import { RecordActuals } from "@/components/RecordActuals";
 import { TourStep } from "@/components/Tour";
 import { Thinking } from "@/components/Thinking";
-import { CashTimeline, OrderSummary, SqueezeCard } from "@/components/CashStory";
-import { shareQuote, stopSharingQuote } from "@/app/actions/records";
+import { CashTimeline, KeyMoments, OrderSummary, SqueezeCard } from "@/components/CashStory";
+import { Fold } from "@/components/Fold";
+import { applyTerms, shareQuote, stopSharingQuote } from "@/app/actions/records";
 import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { headers } from "next/headers";
 
@@ -113,105 +114,133 @@ export default async function OrderPage({
       )}
 
       <Thinking runKey={`${order.id}-${order.status}-${usePredictions}`} steps={steps}>
-      <div className="layout-2">
-      <div className="col-main">
-      {tour && (
-        <TourStep step={1} total={5}>
-          Lerato typed in Thabo's order and it looked fine. Chrono played her cash forward day by day and found she'd run out of money before he pays.
-        </TourStep>
-      )}
+        <div className="layout-2">
+          <div className="col-main">
+            {tour && (
+              <TourStep step={1} total={5}>
+                Lerato typed in Thabo&apos;s order and it looked fine. Chrono played her cash forward day by day: she&apos;d run out of money before he pays.
+              </TourStep>
+            )}
 
-      <VerdictBand
-        verdict={primary.verdict}
-        headline={story.headline}
-        note={changedByPredictions ? `As planned it looks ${VERDICT_LABEL[asEntered.verdict].toLowerCase()}. With how things really go for your business:` : undefined}
-      />
+            <VerdictBand
+              verdict={primary.verdict}
+              headline={story.headline}
+              note={changedByPredictions ? `As planned it looks ${VERDICT_LABEL[asEntered.verdict].toLowerCase()}. With how things really go for your business:` : undefined}
+            >
+              {order.status === "DRAFT" && analysis.deposit.status === "INCREASE" && analysis.deposit.recommendedCents !== null && (
+                <div className="verdict-fix">
+                  <p style={{ margin: 0 }}>
+                    <strong>Fix: ask for {formatRand(analysis.deposit.recommendedCents)} upfront</strong>
+                    <br />
+                    <span className="small muted">
+                      That&apos;s {formatRand(analysis.deposit.recommendedCents - analysis.deposit.currentDepositCents)} more than planned, and you never run short.
+                    </span>
+                  </p>
+                  <form action={applyTerms}>
+                    <input type="hidden" name="orderId" value={order.id} />
+                    <input type="hidden" name="deposit" value={String(analysis.deposit.recommendedCents / 100)} />
+                    <input type="hidden" name="balanceDate" value="" />
+                    <SubmitButton className="btn" pendingLabel="Updating…">
+                      Use this deposit
+                    </SubmitButton>
+                  </form>
+                </div>
+              )}
+              {order.status === "DRAFT" && analysis.deposit.status === "CANNOT_FIX" && primary.verdict !== "SAFE" && (
+                <p className="verdict-fix small" style={{ margin: 0 }}>
+                  A bigger deposit alone won&apos;t fix this. Try moving a cost later or paying a supplier after the customer.
+                </p>
+              )}
+            </VerdictBand>
 
-      {tour && (
-        <TourStep step={2} total={5}>
-          Read the timeline: ingredients, another order and rent all go out before Thabo&apos;s money arrives, and he usually pays a week late. That&apos;s where the cash drops below R0.
-        </TourStep>
-      )}
+            {tour && (
+              <TourStep step={2} total={5}>
+                Three moments tell the story: ingredients go out, rent takes her below R0, and Thabo pays a week late, as he always does.
+              </TourStep>
+            )}
 
-      <section className="panel" style={{ marginTop: "1rem" }}>
-        <CashChart id="order" series={primary.series} compare={changedByPredictions ? asEntered.series : undefined} bufferCents={business.safetyBufferCents} />
-      </section>
-      <CashTimeline story={story} />
+            <KeyMoments story={story} />
+          </div>
 
-      </div>
-      <div className="col-side">
-      {tour && (
-        <TourStep step={3} total={5}>
-          Chrono names everything squeezing her cash, then works out the smallest deposit that fixes it. Try your own deposit in the what-if below.
-        </TourStep>
-      )}
+          <div className="col-side">
+            {tour && (
+              <TourStep step={3} total={5}>
+                Open any section below for the detail: everything squeezing her cash, every day ahead, or your own deposit to test.
+              </TourStep>
+            )}
 
-      <SqueezeCard story={story} />
-      <AnalysisDetails analysis={analysis} />
+            {(order.status === "ACCEPTED" || order.status === "COMPLETED") && <RecordActuals order={order} today={today} />}
 
+            <div className="folds">
+              {story.squeeze.length > 0 && (
+                <Fold title="What's squeezing your cash" count={story.squeeze.length}>
+                  <SqueezeCard story={story} />
+                </Fold>
+              )}
 
-      {order.status === "DRAFT" && (
-        <div style={{ marginTop: "1.5rem" }}>
-          <WhatIf ctx={ctx} order={order} recommendedCents={analysis.deposit.status === "INCREASE" ? analysis.deposit.recommendedCents : null} canApply />
+              <Fold title="See your cash day by day">
+                <CashChart id="order" series={primary.series} compare={changedByPredictions ? asEntered.series : undefined} bufferCents={business.safetyBufferCents} />
+                <div style={{ marginTop: "1rem" }}>
+                  <CashTimeline story={story} />
+                </div>
+              </Fold>
+
+              {order.status === "DRAFT" && (
+                <Fold title="Try a different deposit or date" id="what-if">
+                  <WhatIf ctx={ctx} order={order} recommendedCents={analysis.deposit.status === "INCREASE" ? analysis.deposit.recommendedCents : null} canApply />
+                </Fold>
+              )}
+
+              {(order.status === "DRAFT" || order.status === "ACCEPTED") && (
+                <Fold title="Send the customer a quote" id="quote" open={!!quote}>
+                  {quoteUrl && quote ? (
+                    <>
+                      <p className="small muted" style={{ marginTop: 0 }}>
+                        Anyone with this link can see the order name, total, deposit and payment dates. Nothing else.
+                      </p>
+                      <p className="quote-link num">{quoteUrl}</p>
+                      <div className="grid-2">
+                        <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(`Here is your quote from ${business.name}: ${quoteUrl}`)}`} target="_blank" rel="noopener noreferrer">
+                          Share on WhatsApp
+                        </a>
+                        <form action={stopSharingQuote}>
+                          <input type="hidden" name="orderId" value={order.id} />
+                          <input type="hidden" name="quoteId" value={quote.id} />
+                          <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Stopping…">Stop sharing</SubmitButton>
+                        </form>
+                      </div>
+                    </>
+                  ) : (
+                    <form action={shareQuote}>
+                      <input type="hidden" name="orderId" value={order.id} />
+                      <p className="small muted" style={{ marginTop: 0 }}>
+                        Create a link showing the total, the deposit you need and when payments are due.
+                      </p>
+                      <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Creating link…">Create quote link</SubmitButton>
+                    </form>
+                  )}
+                </Fold>
+              )}
+
+              <Fold title="How Chrono worked this out">
+                <AnalysisDetails analysis={analysis} />
+                <p className="small" style={{ marginTop: "1rem" }}>
+                  {usePredictions ? (
+                    <Link href={`/orders/${order.id}?view=entered`}>See the forecast exactly as you entered it</Link>
+                  ) : (
+                    <Link href={`/orders/${order.id}`}>Turn Chrono&apos;s predictions back on</Link>
+                  )}
+                </p>
+              </Fold>
+            </div>
+
+            {tour && (
+              <TourStep step={4} total={5}>
+                Chrono gets smarter with every payment recorded. <Link href={`/customers/${order.customerId}?tour=1`}>See what Chrono knows about Thabo</Link>
+              </TourStep>
+            )}
+          </div>
         </div>
-      )}
-
-      {(order.status === "ACCEPTED" || order.status === "COMPLETED") && (
-        <div style={{ marginTop: "1.5rem" }}>
-          <RecordActuals order={order} today={today} />
-        </div>
-      )}
-
-      {(order.status === "DRAFT" || order.status === "ACCEPTED") && (
-        <section className="panel" id="quote" style={{ marginTop: "1.5rem" }}>
-          <h2 className="h2" style={{ marginTop: 0 }}>
-            Send the customer a quote
-          </h2>
-          {quoteUrl && quote ? (
-            <>
-              <p className="small muted" style={{ marginTop: 0 }}>
-                Anyone with this link can see the order name, total, deposit and payment dates. Nothing else.
-              </p>
-              <p className="quote-link num">{quoteUrl}</p>
-              <div className="grid-2">
-                <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(`Here is your quote from ${business.name}: ${quoteUrl}`)}`} target="_blank" rel="noopener noreferrer">
-                  Share on WhatsApp
-                </a>
-                <form action={stopSharingQuote}>
-                  <input type="hidden" name="orderId" value={order.id} />
-                  <input type="hidden" name="quoteId" value={quote.id} />
-                  <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Stopping…">Stop sharing</SubmitButton>
-                </form>
-              </div>
-            </>
-          ) : (
-            <form action={shareQuote}>
-              <input type="hidden" name="orderId" value={order.id} />
-              <p className="small muted" style={{ marginTop: 0 }}>
-                Create a link showing the total, the deposit you need and when payments are due.
-              </p>
-              <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Creating link…">Create quote link</SubmitButton>
-            </form>
-          )}
-        </section>
-      )}
-
-      {tour && (
-        <TourStep step={4} total={5}>
-          Chrono gets smarter with every payment recorded. <Link href={`/customers/${order.customerId}?tour=1`}>See what Chrono knows about Thabo</Link>
-        </TourStep>
-      )}
-
-      <p className="small" style={{ marginTop: "1.25rem" }}>
-        {usePredictions ? (
-          <Link href={`/orders/${order.id}?view=entered`}>See the forecast exactly as you entered it</Link>
-        ) : (
-          <Link href={`/orders/${order.id}`}>Turn Chrono&apos;s predictions back on</Link>
-        )}
-      </p>
-
-      </div>
-      </div>
       </Thinking>
 
       {order.status === "DRAFT" && (

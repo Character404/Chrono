@@ -21,6 +21,8 @@ export interface TimelineRow {
   runsOut: boolean;
   /** Back above R0 after running out. */
   recovers: boolean;
+  /** Part of the order being checked (not rent or another order). */
+  isProposed: boolean;
 }
 
 export interface SqueezeFactor {
@@ -31,6 +33,8 @@ export interface SqueezeFactor {
 
 export interface CashStory {
   headline: string;
+  /** The 2–3 moments that explain the verdict at a glance. */
+  keyMoments: TimelineRow[];
   summary: string;
   timeline: TimelineRow[];
   squeeze: SqueezeFactor[];
@@ -101,7 +105,7 @@ export function buildCashStory(input: ForecastInput, analysis: OrderAnalysis): C
     if (runsOut) ranOut = true;
     const recovers = ranOut && !recovered && !runsOut && balance >= 0;
     if (recovers) recovered = true;
-    timeline.push({ date: e.date, ...describe(e), direction: e.direction, amountCents: e.amountCents, balanceAfterCents: balance, runsOut, recovers });
+    timeline.push({ date: e.date, ...describe(e), direction: e.direction, amountCents: e.amountCents, balanceAfterCents: balance, runsOut, recovers, isProposed: e.isProposed });
   }
 
   // --- What's squeezing cash (only when there's a problem) ------------------
@@ -166,5 +170,14 @@ export function buildCashStory(input: ForecastInput, analysis: OrderAnalysis): C
     headline = `You can afford this order. Your cash never drops below ${formatRand(result.minBalanceCents)}.`;
   }
 
-  return { headline, summary, timeline, squeeze, customerName: name };
+  // --- Key moments: the few rows that explain the verdict --------------------
+  const biggestOut = (rows: TimelineRow[]) => rows.filter((r) => r.isProposed && r.direction === "OUT").sort((a, b) => b.amountCents - a.amountCents)[0];
+  const balancePayment = timeline.find((r) => r.isProposed && r.direction === "IN" && !r.label.startsWith("Deposit"));
+  const out = timeline.find((r) => r.runsOut);
+  const picks = out
+    ? [biggestOut(timeline.filter((r) => r.date <= out.date)), out, timeline.find((r) => r.recovers) ?? balancePayment]
+    : [biggestOut(timeline), balancePayment];
+  const keyMoments = picks.filter((r, i, all): r is TimelineRow => !!r && all.indexOf(r) === i).sort((a, b) => timeline.indexOf(a) - timeline.indexOf(b));
+
+  return { headline, keyMoments, summary, timeline, squeeze, customerName: name };
 }
