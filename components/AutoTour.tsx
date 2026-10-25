@@ -125,8 +125,11 @@ export function TourHost() {
   const [clip, setClip] = useState(0);
   const [finished, setFinished] = useState(false);
   const [endCard, setEndCard] = useState(false);
+  const endCardRef = useRef(false);
   const [muted, setMuted] = useState(false);
   const cancelledRef = useRef(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const targetRef = useRef<Element | null>(null);
 
   useEffect(() => {
     if (window.__chronoTourAudio) window.__chronoTourAudio.muted = muted;
@@ -138,12 +141,14 @@ export function TourHost() {
     const focusNow = (target?: string) => {
       focused?.classList.remove("tour-focus");
       focused = null;
+      targetRef.current = null;
       if (!target) return;
       const el = document.querySelector(`[data-tour="${target}"]`);
       if (!el) return;
       el.classList.add("tour-focus");
       el.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
       focused = el;
+      targetRef.current = el;
     };
     /** Highlights a target as soon as it appears, without holding up the narration. */
     const focusWhenReady = (target?: string) => {
@@ -174,6 +179,7 @@ export function TourHost() {
       setActive(true);
       setFinished(false);
       setEndCard(false);
+      endCardRef.current = false;
 
       go("/login");
       await waitFor(() => window.location.pathname === "/login", 6000);
@@ -220,6 +226,7 @@ export function TourHost() {
 
       focusNow(undefined);
       if (!(await say(14))) return;
+      endCardRef.current = true;
       setEndCard(true);
       if (!(await say(15))) return;
       setFinished(true);
@@ -235,6 +242,43 @@ export function TourHost() {
       focused?.classList.remove("tour-focus");
     };
   }, [router]);
+
+  // Keep the caption panel next to whatever is highlighted: below it if there's room, otherwise above it.
+  useEffect(() => {
+    if (!active) return;
+    let frame = 0;
+    const tick = () => {
+      const panel = panelRef.current;
+      const el = targetRef.current;
+      if (panel) {
+        const margin = 12;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const nav = document.querySelector(".tabs");
+        const navRect = nav?.getBoundingClientRect();
+        const bottomLimit = navRect && navRect.top > vh / 2 ? navRect.top - margin : vh - margin;
+        if (el && el.isConnected && !endCardRef.current) {
+          const r = el.getBoundingClientRect();
+          const ph = panel.offsetHeight;
+          const pw = panel.offsetWidth;
+          let top = r.bottom + margin;
+          if (top + ph > bottomLimit) top = r.top - ph - margin;
+          if (top < margin) top = Math.min(bottomLimit - ph, Math.max(margin, r.bottom - ph - margin));
+          const left = Math.min(Math.max(r.left, margin), Math.max(margin, vw - pw - margin));
+          panel.dataset.floating = "true";
+          panel.style.top = `${Math.round(top)}px`;
+          panel.style.left = `${Math.round(left)}px`;
+        } else if (panel.dataset.floating !== "false") {
+          panel.dataset.floating = "false";
+          panel.style.top = "";
+          panel.style.left = "";
+        }
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active]);
 
   const stop = () => {
     cancelledRef.current = true;
@@ -257,7 +301,7 @@ export function TourHost() {
           <p className="tour-endcard-by">BinaryBros</p>
         </div>
       )}
-      <div className="autotour" role="region" aria-label="Narrated tour">
+      <div className="autotour" role="region" aria-label="Narrated tour" ref={panelRef} data-floating="false">
         <div className="autotour-progress" aria-hidden="true">
           <span style={{ width: `${finished ? 100 : (clip / CLIP_SECONDS.length) * 100}%` }} />
         </div>
