@@ -248,9 +248,6 @@ export default async function OrderPage({
 
               {(order.status === "DRAFT" || order.status === "ACCEPTED") && (
                 <Fold title={order.status === "DRAFT" ? "Send the customer a quote" : "Send a quote or invoice"} id="quote" tour="share">
-                  <p className="small muted" style={{ marginTop: 0 }}>
-                    A one-page PDF with the total, the deposit and when payments are due. On a phone, choose WhatsApp from the share menu.
-                  </p>
                   <DocumentShare orderId={order.id} kinds={order.status === "DRAFT" ? ["quote"] : ["quote", "invoice"]} businessName={business.name} previews={docPreviews} />
                   <details className="more">
                     <summary>Prefer a link instead?</summary>
@@ -299,11 +296,6 @@ export default async function OrderPage({
         </div>
       </Thinking>
 
-      {order.status === "DRAFT" && (
-        <p className="hint" style={{ textAlign: "center" }}>
-          Chrono never decides for you. Accepting adds this order to your forecasts.
-        </p>
-      )}
       {tourScript.length > 0 && <TourScene name="order" steps={tourScript} />}
     </main>
   );

@@ -27,9 +27,6 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
   return (
     <main className="page-narrow">
       <h1 className="h1">Regular payments</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Rent, stock, transport, data, loan repayments, or money you expect in. Chrono counts these in every order check.
-      </p>
 
       {commitments.length > 0 && (
         <div className="stat-row">
@@ -49,7 +46,7 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
         <div className="empty">
           <p style={{ margin: 0, fontWeight: 700 }}>No regular payments yet</p>
           <p className="small muted" style={{ margin: "0.25rem 0 0" }}>
-            Start with rent or your biggest regular cost. Chrono counts these in every order check.
+            Start with rent or your biggest regular cost.
           </p>
         </div>
       ) : (

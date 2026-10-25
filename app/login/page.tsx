@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { demoLogin, login } from "@/app/actions/auth";
+import { AutoTourButton } from "@/components/AutoTour";
 import { CashChart } from "@/components/CashChart";
 import type { DayPoint } from "@/lib/engine";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -35,11 +36,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <CashChart id="auth" series={heroSeries()} bufferCents={50000} compact onDark />
       </section>
 
+      <div className="demo-entry">
+        <AutoTourButton />
+      </div>
       <form action={demoLogin} style={{ margin: "0 0 0.6rem" }} data-tour="demo">
         <SubmitButton className="btn btn-wide" pendingLabel="Opening the demo…">Try the demo</SubmitButton>
-        <p className="hint" style={{ marginTop: "0.5rem" }}>
-          Opens Lerato&apos;s Kitchen, a catering business in Soshanguve, with four months of real-looking history.
-        </p>
       </form>
       <div style={{ margin: "0 0 1.75rem" }} />
 

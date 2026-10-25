@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo } from "@/lib/data/repo";
-import { computeMonthlySummary, defaultSummaryMonth, recentMonths } from "@/lib/data/monthly-summary";
+import { computeMonthlySummary, recentMonths } from "@/lib/data/monthly-summary";
 import { monthTitle } from "@/lib/documents/summary-document";
 import { formatRand, todayInJohannesburg } from "@/lib/engine";
 import { PdfShare } from "@/components/PdfShare";
@@ -15,17 +15,17 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
   const ctx = await createRepo(prisma).loadContext(business, today);
   const months = recentMonths(today, 3);
   const { month: requested } = await searchParams;
-  const month = requested && months.includes(requested) ? requested : defaultSummaryMonth(ctx);
+  const month = requested && months.includes(requested) ? requested : months[0];
   const s = computeMonthlySummary(ctx, month);
   const name = monthTitle(month, "en");
   const leftOver = s.netCents;
 
+  const monthName = name.split(" ")[0];
+  const signed = (cents: number, sign: "+" | "−") => `${sign}${formatRand(Math.abs(cents))}`;
+
   return (
     <main className="page-narrow">
       <h1 className="h1">Monthly summary</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Your month in plain words, with nothing to decode.
-      </p>
 
       <nav className="month-tabs" aria-label="Choose a month">
         {months.map((m) => (
@@ -37,21 +37,25 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
 
       <section className="summary-hero" data-tour="summary-hero">
         <p className="small" style={{ margin: 0, opacity: 0.8 }}>
-          Left over in {name}
+          Left over in {monthName}
         </p>
-        <p className="big-number num" style={{ margin: "0.4rem 0", color: leftOver < 0 ? "#ff8a96" : "#7ee2b8" }}>
+        <p className="big-number num" style={{ margin: "0.4rem 0 0.8rem", color: leftOver < 0 ? "#ff8a96" : "#7ee2b8" }}>
           {leftOver < 0 ? "−" : ""}
           {formatRand(Math.abs(leftOver))}
         </p>
-        <p style={{ margin: 0 }}>
-          You took in <strong className="num">{formatRand(s.moneyInCents)}</strong> from {s.paymentsReceived} payment{s.paymentsReceived === 1 ? "" : "s"}. You paid{" "}
-          <strong className="num">{formatRand(s.orderCostsCents)}</strong> for order costs and <strong className="num">{formatRand(s.regularOutCents)}</strong> in regular payments.
-        </p>
+        <div className="summary-figures">
+          <span>Money in</span>
+          <strong className="num" style={{ color: "#7ee2b8" }}>{signed(s.moneyInCents + s.regularInCents, "+")}</strong>
+          <span>Order costs</span>
+          <strong className="num">{signed(s.orderCostsCents, "−")}</strong>
+          <span>Regular payments</span>
+          <strong className="num">{signed(s.regularOutCents, "−")}</strong>
+        </div>
       </section>
 
       <h2 className="h2">Orders paid in full</h2>
       {s.ordersPaidInFull.length === 0 ? (
-        <p className="muted">No orders were fully paid this month.</p>
+        <p className="muted">None this month.</p>
       ) : (
         <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {s.ordersPaidInFull.map((o, i) => (
@@ -61,15 +65,15 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
                 <br />
                 <span className="small muted">{o.customerName}</span>
               </span>
-              <span className="num">{formatRand(o.valueCents)}</span>
+              <span className="num">{signed(o.valueCents, "+")}</span>
             </div>
           ))}
         </div>
       )}
 
-      <h2 className="h2">Who paid late</h2>
+      <h2 className="h2">Paid late</h2>
       {s.latePayments.length === 0 ? (
-        <p className="muted">{s.onTimeRate === null ? "No balance payments came in this month." : "Everyone paid on time. "}</p>
+        <p className="muted">Nobody this month.</p>
       ) : (
         <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {s.latePayments.map((l, i) => (
@@ -84,19 +88,23 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
           ))}
         </div>
       )}
-      {s.onTimeRate !== null && (
-        <p className="small muted">
-          {Math.round(s.onTimeRate * 100)}% of balance payments arrived on time.
-          {s.topCustomer ? ` Your biggest customer was ${s.topCustomer.name} (${formatRand(s.topCustomer.amountCents)}).` : ""}
-        </p>
+
+      {s.topCustomer && (
+        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0, marginTop: "1rem" }}>
+          <div className="row">
+            <span>
+              <span className="small muted">Biggest customer</span>
+              <br />
+              <strong>{s.topCustomer.name}</strong>
+            </span>
+            <span className="num">{signed(s.topCustomer.amountCents, "+")}</span>
+          </div>
+        </div>
       )}
 
       <section className="panel" style={{ marginTop: "1.5rem" }}>
         <p className="label" style={{ marginTop: 0 }}>
-          Keep or share this summary
-        </p>
-        <p className="small muted" style={{ marginTop: 0 }}>
-          A one-page PDF of {name}: useful for your records, or when you talk to a funder or a bigger client.
+          {monthName}&apos;s summary
         </p>
         <PdfShare path={`/api/documents/summary?month=${month}`} label="Share summary (PDF)" shareText={`${business.name}: summary for ${name}`} />
       </section>

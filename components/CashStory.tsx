@@ -32,9 +32,6 @@ export function CashTimeline({ story }: { story: Story }) {
   if (story.timeline.length === 0) return null;
   return (
     <>
-      <p className="small muted" style={{ margin: "0 0 0.75rem" }}>
-        Everything coming in and going out until {story.customerName} has paid in full.
-      </p>
       <TimelineRows rows={story.timeline} />
     </>
   );

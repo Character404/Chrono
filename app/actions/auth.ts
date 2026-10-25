@@ -7,7 +7,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { clearLoginFailures, isLoginBlocked, recordLoginFailure } from "@/lib/auth/attempts";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { createPrivateDemo } from "@/lib/demo/seed-demo";
-import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo/demo-data";
+import { DEMO_EMAIL, DEMO_IDS, DEMO_PASSWORD } from "@/lib/demo/demo-data";
 import { todayInJohannesburg } from "@/lib/engine/dates";
 
 const credentials = z.object({
@@ -53,9 +53,16 @@ export async function signup(formData: FormData) {
   redirect("/setup");
 }
 
-async function openPrivateDemo(): Promise<never> {
+async function openPrivateDemo(destination: "home" | "manual-tour" = "home"): Promise<never> {
   const user = await createPrivateDemo(prisma, todayInJohannesburg());
   await createSession(user.id);
+  if (destination === "manual-tour") {
+    const wedding = await prisma.order.findFirst({
+      where: { businessId: user.business?.id, id: { endsWith: `_${DEMO_IDS.wedding}` } },
+      select: { id: true },
+    });
+    if (wedding) redirect(`/orders/${wedding.id}?tour=1`);
+  }
   redirect("/home");
 }
 

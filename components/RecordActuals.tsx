@@ -17,9 +17,6 @@ export function RecordActuals({ order, today }: { order: OrderInput; today: ISOD
       <h2 className="h2" style={{ marginTop: 0 }}>
         Record what actually happened
       </h2>
-      <p className="small muted" style={{ marginTop: 0 }}>
-        Each payment you record teaches Chrono how this customer really pays, so your next forecasts get more accurate.
-      </p>
 
       <div className="rows">
         {order.payments.map((p) => (

@@ -89,7 +89,6 @@ export function DocumentShare({ orderId, kinds, businessName, previews }: { orde
       </div>
       {previews && <DocPaper preview={previews[lang]} />}
       {message && <p className="hint">{message}</p>}
-      {lang === "nso" && <p className="hint">Sepedi documents are a first draft, checked by our team.</p>}
     </div>
   );
 }
