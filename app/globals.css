@@ -1835,3 +1835,140 @@ details.more[open] > summary::before {
   color: var(--safe);
   font-weight: 900;
 }
+
+/* ---------- On-screen quote/invoice preview ---------- */
+.doc-paper {
+  margin-top: 1rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+  color: #10262b;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+  font-size: 0.85rem;
+}
+
+.doc-paper-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: #0f2a30;
+  color: #ffffff;
+}
+
+.doc-paper-head strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.doc-paper-title {
+  color: #ffb703;
+  font-weight: 800;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.doc-paper-body {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.doc-paper-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: #56686c;
+}
+
+.doc-paper-head .doc-paper-sub {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.doc-paper-detail {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.5rem;
+  margin: 0 0 0.3rem;
+}
+
+.doc-paper-detail span {
+  color: #56686c;
+}
+
+.doc-paper-rows {
+  margin: 0.75rem 0;
+  border-top: 1px solid #dce4e3;
+}
+
+.doc-paper-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #dce4e3;
+}
+
+.doc-paper-row[data-strong="true"] {
+  font-weight: 800;
+}
+
+.doc-paper-row .num {
+  white-space: nowrap;
+}
+
+.doc-paper-note {
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+/* ---------- Tour end card ---------- */
+.tour-endcard {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  text-align: center;
+  color: #eef6f5;
+  background: radial-gradient(120% 80% at 80% 10%, rgba(34, 184, 207, 0.25), transparent 55%), linear-gradient(160deg, #0f2e34, #0a1d21 70%);
+  animation: fadeIn 500ms var(--ease) both;
+}
+
+.tour-endcard-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 800;
+  font-size: clamp(3rem, 14vw, 6rem);
+  letter-spacing: -0.04em;
+}
+
+.tour-endcard-ring {
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 50%;
+  background: conic-gradient(#12b886, #22b8cf, #ffb703, #f43f5e, #12b886);
+  -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%);
+  mask: radial-gradient(circle, transparent 52%, #000 54%);
+}
+
+.tour-endcard-tag {
+  margin: 0;
+  font-size: clamp(1.4rem, 6vw, 2.4rem);
+  font-weight: 800;
+  color: #ffb703;
+}
+
+.tour-endcard-by {
+  margin: 0;
+  color: #a9bdbf;
+  letter-spacing: 0.06em;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}

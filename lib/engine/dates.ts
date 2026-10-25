@@ -97,3 +97,11 @@ export function spokenDay(date: ISODate): string {
   const suffix = d % 10 === 1 && d !== 11 ? "st" : d % 10 === 2 && d !== 12 ? "nd" : d % 10 === 3 && d !== 13 ? "rd" : "th";
   return `the ${d}${suffix}`;
 }
+
+/** "the 2nd of November", for speech and captions. */
+export function spokenDayMonth(date: ISODate): string {
+  const dt = new Date(toUTC(date));
+  const d = dt.getUTCDate();
+  const suffix = d % 10 === 1 && d !== 11 ? "st" : d % 10 === 2 && d !== 12 ? "nd" : d % 10 === 3 && d !== 13 ? "rd" : "th";
+  return `the ${d}${suffix} of ${MONTHS_LONG[dt.getUTCMonth()]}`;
+}

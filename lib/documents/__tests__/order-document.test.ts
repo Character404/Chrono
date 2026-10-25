@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { documentNumber, documentRows, pdfSafe, renderOrderDocument, type DocumentInput } from "../order-document";
 import { docDate } from "../i18n";
+import { buildDocPreview } from "../preview";
 import { buildDemoData, DEMO_IDS } from "../../demo/demo-data";
 
 const data = buildDemoData("2026-10-24");
@@ -35,6 +36,14 @@ describe("Customer documents", () => {
 
   it("keeps Sepedi letters but drops characters the PDF font can't draw", () => {
     expect(pdfSafe("Tšhaletšo −R200")).toBe("Tšhaletšo -R200");
+  });
+
+  it("previews the same content as the PDF, in either language", () => {
+    const en = buildDocPreview({ ...base, kind: "quote", lang: "en", order: wedding } as DocumentInput);
+    const nso = buildDocPreview({ ...base, kind: "quote", lang: "nso", order: wedding } as DocumentInput);
+    expect(en.title).toBe("Quote");
+    expect(nso.title).toBe("Kakanyetšo ya Theko");
+    expect(en.rows.map((r) => r.amount)).toEqual(nso.rows.map((r) => r.amount));
   });
 
   it("numbers documents from the order", () => {

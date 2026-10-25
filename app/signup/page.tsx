@@ -42,7 +42,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           </li>
           <li data-step="2">
             <strong>Register your business</strong>
-            <span className="small muted">So Chrono only serves real, trading businesses.</span>
+            <span className="small muted">What the business sells, where it trades and how long it has traded.</span>
             <div className="reg-preview" aria-label="Example of the business registration details">
               <span className="reg-field">
                 <span>What you sell</span>
@@ -62,7 +62,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
               </span>
               <span className="reg-field">
                 <span>Mobile number</span>
-                <b>For verification codes</b>
+                <b>For future verification</b>
               </span>
               <span className="reg-field">
                 <span>Cash today and safety cushion</span>
@@ -72,9 +72,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           </li>
           <li data-step="3">
             <strong>
-              Verification <span className="badge badge-TIGHT">Pilot</span>
+              Verification <span className="badge badge-TIGHT">Planned</span>
             </strong>
-            <span className="small muted">A partner bank or incubator confirms the business is real before full access.</span>
+            <span className="small muted">We plan to confirm businesses are real before full access, working with a bank or incubator.</span>
           </li>
           <li data-step="4">
             <strong>Check your first order</strong>
@@ -82,7 +82,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           </li>
         </ol>
         <p className="small muted" style={{ marginBottom: 0 }}>
-          Prototype: steps 2 and 3 show the full process we&apos;ll run in the pilot; they aren&apos;t live yet. Chrono never asks for bank logins, card details or ID numbers.
+          Prototype: steps 2 and 3 show the process we&apos;re designing; they aren&apos;t live yet. Chrono never asks for bank logins, card details or ID numbers.
         </p>
       </section>
       <p className="small muted">

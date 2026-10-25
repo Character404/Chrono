@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo, forecastInputFor } from "@/lib/data/repo";
 import { orderRowToInput } from "@/lib/data/convert";
-import { analyzeOrder, buildCashStory, spokenDate, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis, type CashStory } from "@/lib/engine";
+import { analyzeOrder, buildCashStory, spokenDayMonth, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis, type CashStory } from "@/lib/engine";
 import { decideOrder } from "@/app/actions/orders";
 import { CashChart } from "@/components/CashChart";
 import { VerdictBadge, VerdictBand } from "@/components/Verdict";
@@ -17,6 +17,7 @@ import { Thinking } from "@/components/Thinking";
 import { CashTimeline, KeyMoments, OrderSummary, SqueezeCard } from "@/components/CashStory";
 import { Fold } from "@/components/Fold";
 import { DocumentShare } from "@/components/DocumentShare";
+import { buildDocPreview } from "@/lib/documents/preview";
 import { TourScene, type TourScriptStep } from "@/components/AutoTour";
 import { applyTerms, shareQuote, stopSharingQuote } from "@/app/actions/records";
 import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
@@ -100,17 +101,24 @@ export default async function OrderPage({
         : "Confirmed your deposit is enough",
   ];
 
+  // What the customer will receive, previewed on screen in both languages.
+  const previewKind = order.status === "DRAFT" ? ("quote" as const) : ("invoice" as const);
+  const previewBase = { kind: previewKind, today, businessName: business.name, businessType: business.type, customerName: row.customer?.name ?? "", order };
+  const docPreviews = { en: buildDocPreview({ ...previewBase, lang: "en" }), nso: buildDocPreview({ ...previewBase, lang: "nso" }) };
+
   // The order part of the narrated tour, built from this order's real numbers.
   const isTourOrder = isDemoRecord(order.id, DEMO_IDS.wedding) && order.status === "DRAFT";
   let tourScript: TourScriptStep[] = [];
   if (isTourOrder && primary.shortfall && analysis.deposit.recommendedCents !== null) {
-    const words = ["no", "one", "two", "three", "four", "five", "six"];
-    const causes = words[story.squeeze.length] ?? String(story.squeeze.length);
+    const deposit = Math.round(analysis.deposit.recommendedCents / 100).toLocaleString("en-US");
     tourScript = [
-      { target: "verdict", say: `No. Chrono plays her cash forward and finds she'd run out of money on ${spokenDate(primary.shortfall.firstDate)}.` },
-      { target: "why", say: `Ingredients and rent go out first, and ${firstName} pays about a week late, as his history shows.` },
-      { target: "squeeze", open: "squeeze", say: `${causes[0].toUpperCase() + causes.slice(1)} pressures collide, the same ones that sink small businesses.` },
-      { target: "fix", say: `Chrono's fix: ask for ${Math.round(analysis.deposit.recommendedCents / 100)} rand upfront. One tap.` },
+      { target: "verdict", say: `Chrono spots a problem: her cash is projected to run short on ${spokenDayMonth(primary.shortfall.firstDate)}.` },
+      { target: "why", say: `${firstName} usually pays a week late, so Chrono forecasts his payment after rent is due.` },
+      {
+        target: "fix",
+        say: `Instead of just warning her, Chrono finds the deposit that covers the gap: R${deposit}.`,
+        speech: `Instead of just warning her, Chrono finds the deposit that covers the gap: ${deposit} rand.`,
+      },
     ];
   }
 
@@ -218,7 +226,7 @@ export default async function OrderPage({
                   <p className="small muted" style={{ marginTop: 0 }}>
                     A one-page PDF with the total, the deposit and when payments are due. On a phone, choose WhatsApp from the share menu.
                   </p>
-                  <DocumentShare orderId={order.id} kinds={order.status === "DRAFT" ? ["quote"] : ["quote", "invoice"]} businessName={business.name} />
+                  <DocumentShare orderId={order.id} kinds={order.status === "DRAFT" ? ["quote"] : ["quote", "invoice"]} businessName={business.name} previews={docPreviews} />
                   <details className="more">
                     <summary>Prefer a link instead?</summary>
                     {quoteUrl && quote ? (

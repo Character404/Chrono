@@ -35,7 +35,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
         ))}
       </nav>
 
-      <section className="summary-hero">
+      <section className="summary-hero" data-tour="summary-hero">
         <p className="small" style={{ margin: 0, opacity: 0.8 }}>
           Left over in {name}
         </p>
