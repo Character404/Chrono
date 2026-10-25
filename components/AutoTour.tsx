@@ -10,12 +10,16 @@ import { useRouter } from "next/navigation";
  */
 
 export interface TourScriptStep {
-  /** Words spoken and shown as a caption. */
+  /** Shown as the caption, and spoken unless `speech` is given. */
   say: string;
+  /** What the voice says, when it should differ from the caption (e.g. "2,300 rand" for "R2,300"). */
+  speech?: string;
   /** data-tour value of the element to highlight and scroll to. */
   target?: string;
   /** Open this tap-to-open section first. */
   open?: string;
+  /** Go to this page first. */
+  path?: string;
 }
 
 declare global {
@@ -25,47 +29,35 @@ declare global {
 }
 
 const START_EVENT = "chrono-tour-start";
-const PAUSE_MS = 550;
+const PAUSE_MS = 120;
 
-function pickVoice(): SpeechSynthesisVoice | null {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
-  const voices = window.speechSynthesis.getVoices();
-  for (const lang of ["en-ZA", "en-GB", "en-AU", "en-US"]) {
-    const v = voices.find((x) => x.lang?.replace("_", "-").toLowerCase() === lang.toLowerCase());
-    if (v) return v;
+/**
+ * The narration: BinaryBros' own recorded clips in public/tour-audio, played as recorded
+ * (never sped up or cut). Lengths in seconds, used only if a clip can't play.
+ */
+const CLIP_SECONDS = [7.63, 1.65, 4.21, 4.99, 11.15, 4.83, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
+const CLIP_LABELS = [
+  "Welcome to Chrono",
+  "Registering a business",
+  "Lerato's catering business in Soshanguve",
+  "Her dashboard",
+  "Thabo's wedding order",
+  "The forecast: a projected shortfall",
+  "Why: costs, Thabo's payments and upcoming expenses",
+  "Applying the recommended deposit",
+  "Red to green",
+  "Quote in English or Sepedi, shared on WhatsApp",
+  "Customers: how each customer pays",
+  "Payments: regular commitments",
+  "Monthly summary",
+  "Know before you commit",
+  "Chrono by BinaryBros",
+];
+
+declare global {
+  interface Window {
+    __chronoTourAudio?: HTMLAudioElement;
   }
-  return voices.find((v) => v.lang?.toLowerCase().startsWith("en")) ?? null;
-}
-
-function speak(text: string, muted: boolean): Promise<void> {
-  const estimate = Math.max(1800, (text.split(/\s+/).length / 2.7) * 1000);
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = () => {
-      if (!done) {
-        done = true;
-        resolve();
-      }
-    };
-    if (muted || !("speechSynthesis" in window)) {
-      setTimeout(finish, estimate);
-      return;
-    }
-    const fallback = setTimeout(finish, estimate + 2500);
-    const u = new SpeechSynthesisUtterance(text);
-    const voice = pickVoice();
-    if (voice) u.voice = voice;
-    u.rate = 1.05;
-    u.onend = () => {
-      clearTimeout(fallback);
-      finish();
-    };
-    u.onerror = () => {
-      clearTimeout(fallback);
-      setTimeout(finish, estimate);
-    };
-    window.speechSynthesis.speak(u);
-  });
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -75,46 +67,75 @@ async function waitFor<T>(check: () => T | null | undefined | false, timeoutMs: 
   while (Date.now() < end) {
     const v = check();
     if (v) return v as T;
-    await sleep(120);
+    await sleep(100);
   }
   return null;
 }
 
-// Script for the pages that don't need live numbers.
-// Structure (from the hackathon's "Demo without the drama" talk):
-// one promise, one rehearsed route, one action with a visible result, then the boundary and next step.
-const INTRO: TourScriptStep[] = [
-  { target: "intro", say: "Hi, we're BinaryBros. In ninety seconds, you'll see Chrono catch a cash shortfall a business owner can't see, and fix it." },
-];
-const SIGNUP: TourScriptStep[] = [{ target: "signup-process", say: "Owners register their business, and in our pilot a partner verifies it." }];
-const OPEN_DEMO: TourScriptStep = { target: "demo", say: "For this demo, Lerato's catering business in Soshanguve is already registered." };
-const HOME: TourScriptStep[] = [{ target: "wedding", say: "Thabo wants her to cater a wedding. It's profitable, but can she afford it?" }];
-const AFTER_FIX: TourScriptStep = { target: "verdict", say: "And the order is safe. She can say yes with confidence." };
-const CLOSE: TourScriptStep[] = [
-  { say: "Unlike notebooks, or apps like Xero that keep books after the sale, Chrono checks each order before you commit." },
-  { say: "Each business sees only its own data. Next, we're piloting with founders in Soshanguve to measure how accurate it is." },
-  { say: "Chrono. Know before you commit." },
-];
+/** One audio element, unlocked by the tap that starts the tour (required on phones). */
+function tourAudio(): HTMLAudioElement {
+  if (!window.__chronoTourAudio) window.__chronoTourAudio = new Audio();
+  return window.__chronoTourAudio;
+}
+
+/**
+ * Plays clip n to the end. `at` runs an action a set time before the clip finishes,
+ * so the screen changes exactly on cue. Falls back to the clip's length if audio can't play.
+ */
+function playClip(n: number, at?: { secondsBeforeEnd: number; run: () => void }): Promise<void> {
+  const audio = tourAudio();
+  const seconds = CLIP_SECONDS[n - 1];
+  return new Promise((resolve) => {
+    let done = false;
+    let fired = false;
+    const fire = () => {
+      if (at && !fired) {
+        fired = true;
+        at.run();
+      }
+    };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      fire();
+      audio.onended = null;
+      audio.ontimeupdate = null;
+      clearTimeout(fallback);
+      resolve();
+    };
+    const fallback = setTimeout(finish, (seconds + 2.5) * 1000);
+    audio.ontimeupdate = () => {
+      if (at && audio.duration && audio.duration - audio.currentTime <= at.secondsBeforeEnd) fire();
+    };
+    audio.onended = finish;
+    audio.src = `/tour-audio/clip_${n}.mp3`;
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      // Couldn't play (e.g. blocked): keep the timing with captions only.
+      if (at) setTimeout(fire, Math.max(0, seconds - at.secondsBeforeEnd) * 1000);
+      clearTimeout(fallback);
+      setTimeout(finish, seconds * 1000);
+    });
+  });
+}
 
 export function TourHost() {
   const router = useRouter();
   const [active, setActive] = useState(false);
-  const [caption, setCaption] = useState("");
-  const [progress, setProgress] = useState(0);
+  const [clip, setClip] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [endCard, setEndCard] = useState(false);
   const [muted, setMuted] = useState(false);
   const cancelledRef = useRef(false);
-  const mutedRef = useRef(false);
 
   useEffect(() => {
-    mutedRef.current = muted;
-    if (muted && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if (window.__chronoTourAudio) window.__chronoTourAudio.muted = muted;
   }, [muted]);
 
   useEffect(() => {
     let focused: Element | null = null;
     const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const focus = (target?: string) => {
+    const focusNow = (target?: string) => {
       focused?.classList.remove("tour-focus");
       focused = null;
       if (!target) return;
@@ -124,76 +145,84 @@ export function TourHost() {
       el.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
       focused = el;
     };
-    const totalSteps = INTRO.length + SIGNUP.length + 1 + HOME.length + 4 + 1 + CLOSE.length; // 4 order steps, 1 after the fix
-    let done = 0;
-
-    const play = async (steps: TourScriptStep[]) => {
-      for (const step of steps) {
-        if (cancelledRef.current) return false;
-        if (step.open) {
-          const fold = document.querySelector(`[data-tour="${step.open}"]`);
-          if (fold instanceof HTMLDetailsElement) fold.open = true;
-        }
-        focus(step.target);
-        setCaption(step.say);
-        done += 1;
-        setProgress(Math.min(1, done / totalSteps));
-        await speak(step.say, mutedRef.current);
-        if (cancelledRef.current) return false;
-        await sleep(PAUSE_MS);
-      }
-      return true;
+    /** Highlights a target as soon as it appears, without holding up the narration. */
+    const focusWhenReady = (target?: string) => {
+      if (!target) return focusNow(undefined);
+      void waitFor(() => document.querySelector(`[data-tour="${target}"]`), 5000).then((el) => {
+        if (el && !cancelledRef.current) focusNow(target);
+      });
     };
-    const go = async (path: string) => {
+    const openFold = (name: string) => {
+      const fold = document.querySelector(`[data-tour="${name}"]`);
+      if (fold instanceof HTMLDetailsElement) fold.open = true;
+    };
+    const go = (path: string) => {
       if (window.location.pathname !== path) router.push(path);
-      await waitFor(() => window.location.pathname === path, 8000);
-      await sleep(500);
+    };
+    const say = async (n: number, target?: string, at?: { secondsBeforeEnd: number; run: () => void }) => {
+      if (cancelledRef.current) return false;
+      setClip(n);
+      focusWhenReady(target);
+      await playClip(n, at);
+      if (cancelledRef.current) return false;
+      await sleep(PAUSE_MS);
+      return true;
     };
 
     const run = async () => {
       cancelledRef.current = false;
       setActive(true);
       setFinished(false);
-      setCaption("");
-      done = 0;
-      window.__chronoTourScenes = {};
+      setEndCard(false);
 
-      await go("/login");
-      if (!(await play(INTRO))) return;
-      await go("/signup");
-      if (!(await play(SIGNUP))) return;
-      await go("/login");
+      go("/login");
+      await waitFor(() => window.location.pathname === "/login", 6000);
+      if (!(await say(1, "intro"))) return;
 
-      // Open the demo while saying so.
-      focus(OPEN_DEMO.target);
-      setCaption(OPEN_DEMO.say);
-      done += 1;
-      const said = speak(OPEN_DEMO.say, mutedRef.current);
-      document.querySelector<HTMLButtonElement>('[data-tour="demo"] button')?.click();
-      await said;
+      go("/signup");
+      if (!(await say(2, "signup-process"))) return;
+
+      // Clip 3 plays while the demo opens.
+      go("/login");
+      const opened = (async () => {
+        const button = await waitFor(() => document.querySelector<HTMLButtonElement>('[data-tour="demo"] button'), 6000);
+        focusNow("demo");
+        button?.click();
+      })();
+      if (!(await say(3))) return;
+      await opened;
       await waitFor(() => window.location.pathname === "/home", 20000);
-      if (cancelledRef.current) return;
-      await sleep(900);
-      if (!(await play(HOME))) return;
+      if (!(await say(4, "home-hero"))) return;
 
+      // Clip 5 plays while the wedding order opens.
       document.querySelector<HTMLAnchorElement>('a[data-tour="wedding"]')?.click();
-      const scene = await waitFor(() => window.__chronoTourScenes?.order, 12000);
-      if (cancelledRef.current) return;
-      await sleep(1900); // let the order screen finish its own "checked" moment
-      if (scene && !(await play(scene))) return;
+      if (!(await say(5, "summary"))) return;
+      if (!(await say(6, "verdict"))) return;
+      if (!(await say(7, "why"))) return;
 
-      // The one action with a visible result: really apply Chrono's deposit and watch the verdict turn safe.
-      document.querySelector<HTMLButtonElement>('[data-tour="fix"] button')?.click();
-      await waitFor(() => document.querySelector(".verdict-SAFE"), 12000);
-      if (cancelledRef.current) return;
-      await sleep(600);
-      if (!(await play([AFTER_FIX]))) return;
-      if (!(await play(CLOSE))) return;
+      // Clip 8: tap the deposit as the narration says "We apply that amount here" (about 5.6s in),
+      // so the verdict turns green during "...and check how it changes the forecast."
+      const fix = { secondsBeforeEnd: 2.45, run: () => document.querySelector<HTMLButtonElement>('[data-tour="fix"] button')?.click() };
+      if (!(await say(8, "fix", fix))) return;
+      await waitFor(() => document.querySelector(".verdict-SAFE"), 8000);
+      if (!(await say(9, "verdict"))) return;
 
-      focus(undefined);
-      setProgress(1);
+      openFold("share");
+      document.querySelector<HTMLInputElement>('[data-tour="lang-nso"] input')?.click();
+      if (!(await say(10, "doc-preview"))) return;
+
+      go("/customers");
+      if (!(await say(11, "customers-list"))) return;
+      go("/commitments");
+      if (!(await say(12, "payments-list"))) return;
+      go("/summary");
+      if (!(await say(13, "summary-hero"))) return;
+
+      focusNow(undefined);
+      if (!(await say(14))) return;
+      setEndCard(true);
+      if (!(await say(15))) return;
       setFinished(true);
-      setCaption("That's Chrono. Explore Lerato's business yourself: everything here is a private demo copy.");
     };
 
     const onStart = () => {
@@ -209,31 +238,44 @@ export function TourHost() {
 
   const stop = () => {
     cancelledRef.current = true;
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    window.__chronoTourAudio?.pause();
     document.querySelectorAll(".tour-focus").forEach((el) => el.classList.remove("tour-focus"));
+    setEndCard(false);
     setActive(false);
   };
 
   if (!active) return null;
   return (
-    <div className="autotour" role="region" aria-label="Narrated tour">
-      <div className="autotour-progress" aria-hidden="true">
-        <span style={{ width: `${progress * 100}%` }} />
-      </div>
-      <p className="autotour-caption" aria-live="polite">
-        {caption || "Starting the tour…"}
-      </p>
-      <div className="autotour-actions">
-        {!finished && (
-          <button type="button" className="autotour-btn" onClick={() => setMuted((m) => !m)} aria-pressed={muted}>
-            {muted ? "Sound on" : "Mute"}
+    <>
+      {endCard && (
+        <div className="tour-endcard" aria-hidden="true">
+          <div className="tour-endcard-mark">
+            <span className="tour-endcard-ring" />
+            Chrono
+          </div>
+          <p className="tour-endcard-tag">Know before you commit.</p>
+          <p className="tour-endcard-by">BinaryBros</p>
+        </div>
+      )}
+      <div className="autotour" role="region" aria-label="Narrated tour">
+        <div className="autotour-progress" aria-hidden="true">
+          <span style={{ width: `${finished ? 100 : (clip / CLIP_SECONDS.length) * 100}%` }} />
+        </div>
+        <p className="autotour-caption" aria-live="polite">
+          {finished ? "That's Chrono. Explore Lerato's business yourself: it's your own private demo copy." : clip ? CLIP_LABELS[clip - 1] : "Starting the tour…"}
+        </p>
+        <div className="autotour-actions">
+          {!finished && (
+            <button type="button" className="autotour-btn" onClick={() => setMuted((m) => !m)} aria-pressed={muted}>
+              {muted ? "Sound on" : "Mute"}
+            </button>
+          )}
+          <button type="button" className="autotour-btn autotour-stop" onClick={stop}>
+            {finished ? "Close" : "Stop tour"}
           </button>
-        )}
-        <button type="button" className="autotour-btn autotour-stop" onClick={stop}>
-          {finished ? "Close" : "Stop tour"}
-        </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -245,18 +287,25 @@ export function TourScene({ name, steps }: { name: string; steps: TourScriptStep
   return null;
 }
 
-/** Starts the tour. Unlocks speech inside the tap (needed on iPhones). */
+/** Starts the tour. The tap also unlocks audio playback (needed on phones). */
 export function AutoTourButton({ className = "btn btn-wide autotour-start" }: { className?: string }) {
   const start = () => {
     try {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const unlock = new SpeechSynthesisUtterance(" ");
-        unlock.volume = 0;
-        window.speechSynthesis.speak(unlock);
-      }
+      const audio = tourAudio();
+      audio.muted = true;
+      audio.src = "/tour-audio/clip_1.mp3";
+      void audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false;
+        })
+        .catch(() => {
+          audio.muted = false;
+        });
     } catch {
-      // No speech: the tour still runs with captions.
+      // No audio: the tour still runs with captions.
     }
     window.dispatchEvent(new Event(START_EVENT));
   };

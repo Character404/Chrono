@@ -53,7 +53,7 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
           </p>
         </div>
       ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }} data-tour="payments-list">
           {commitments.map((c) => (
             <div key={c.id} className="row">
               <span style={{ display: "flex", gap: "0.7rem", alignItems: "center" }}>

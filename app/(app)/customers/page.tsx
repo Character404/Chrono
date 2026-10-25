@@ -45,7 +45,7 @@ export default async function CustomersPage() {
           </Link>
         </div>
       ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }} data-tour="customers-list">
           {customers.map((c) => (
             <Link key={c.id} href={`/customers/${c.id}`} className="row customer-row">
               <ReliabilityRing onTimeRate={c.reliability.onTimeRate} hasHistory={c.reliability.scope === "CUSTOMER"} />
