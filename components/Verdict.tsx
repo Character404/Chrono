@@ -1,4 +1,4 @@
-import { VERDICT_LABEL, type Verdict as VerdictKind } from "@/lib/engine";
+import { keepAmountsTogether, VERDICT_LABEL, type Verdict as VerdictKind } from "@/lib/engine";
 
 const ICON: Record<VerdictKind, string> = { SAFE: "✓", TIGHT: "!", SHORTFALL: "!" };
 
@@ -16,7 +16,7 @@ export function VerdictBand({ verdict, headline, note }: { verdict: VerdictKind;
         </span>
         <p className="verdict-word">{VERDICT_LABEL[verdict]}</p>
       </div>
-      <p className="verdict-headline">{headline}</p>
+      <p className="verdict-headline">{keepAmountsTogether(headline)}</p>
     </section>
   );
 }

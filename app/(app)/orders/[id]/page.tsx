@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo, forecastInputFor } from "@/lib/data/repo";
 import { orderRowToInput } from "@/lib/data/convert";
-import { analyzeOrder, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis } from "@/lib/engine";
+import { analyzeOrder, buildCashStory, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis, type CashStory } from "@/lib/engine";
 import { decideOrder } from "@/app/actions/orders";
 import { CashChart } from "@/components/CashChart";
 import { VerdictBadge, VerdictBand } from "@/components/Verdict";
@@ -14,6 +14,7 @@ import { WhatIf } from "@/components/WhatIf";
 import { RecordActuals } from "@/components/RecordActuals";
 import { TourStep } from "@/components/Tour";
 import { Thinking } from "@/components/Thinking";
+import { CashTimeline, OrderSummary, SqueezeCard } from "@/components/CashStory";
 import { shareQuote, stopSharingQuote } from "@/app/actions/records";
 import { DEMO_IDS } from "@/lib/demo/demo-data";
 import { headers } from "next/headers";
@@ -52,8 +53,10 @@ export default async function OrderPage({
   const usePredictions = view !== "entered";
 
   let analysis: OrderAnalysis;
+  let story: CashStory;
   try {
     analysis = analyzeOrder(forecastInputFor(ctx, order), { usePredictions });
+    story = buildCashStory(forecastInputFor(ctx, order), analysis);
   } catch (error) {
     if (error instanceof EngineValidationError) {
       return (
@@ -100,16 +103,7 @@ export default async function OrderPage({
         Back to home
       </Link>
       <h1 className="h1">{order.title}</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        {row.customer?.name}, <span className="num">{formatRand(order.valueCents)}</span>
-        {deposit && (
-          <>
-            {" "}
-            with a <span className="num">{formatRand(deposit.amountCents)}</span> deposit
-          </>
-        )}
-        {balance?.expectedDate && <> and the balance on {formatShortDate(balance.expectedDate)}</>}
-      </p>
+      <OrderSummary story={story} />
 
       {statusNote && <p className="demo-flag">{statusNote}</p>}
       {error && (
@@ -123,34 +117,36 @@ export default async function OrderPage({
       <div className="col-main">
       {tour && (
         <TourStep step={1} total={5}>
-          Lerato typed this order in and it looked fine. Chrono checked how Thabo actually pays and found a problem before she said yes.
+          Lerato typed in Thabo's order and it looked fine. Chrono played her cash forward day by day and found she'd run out of money before he pays.
         </TourStep>
       )}
 
       <VerdictBand
         verdict={primary.verdict}
-        headline={analysis.explanation.headline}
-        note={changedByPredictions ? `As you entered it: ${VERDICT_LABEL[asEntered.verdict]}. Adjusted for how your customers really pay:` : undefined}
+        headline={story.headline}
+        note={changedByPredictions ? `As planned it looks ${VERDICT_LABEL[asEntered.verdict].toLowerCase()}. With how things really go for your business:` : undefined}
       />
 
       {tour && (
         <TourStep step={2} total={5}>
-          The dashed line is the order as entered. The solid line is Chrono&apos;s forecast: rent goes out before Thabo&apos;s late balance arrives, and the cash dips below R0.
+          Read the timeline: ingredients, another order and rent all go out before Thabo&apos;s money arrives, and he usually pays a week late. That&apos;s where the cash drops below R0.
         </TourStep>
       )}
 
       <section className="panel" style={{ marginTop: "1rem" }}>
         <CashChart id="order" series={primary.series} compare={changedByPredictions ? asEntered.series : undefined} bufferCents={business.safetyBufferCents} />
       </section>
+      <CashTimeline story={story} />
 
       </div>
       <div className="col-side">
       {tour && (
         <TourStep step={3} total={5}>
-          Chrono works out the smallest deposit that keeps Lerato safe, and explains every number. Try your own deposit in the what-if below.
+          Chrono names everything squeezing her cash, then works out the smallest deposit that fixes it. Try your own deposit in the what-if below.
         </TourStep>
       )}
 
+      <SqueezeCard story={story} />
       <AnalysisDetails analysis={analysis} />
 
 
