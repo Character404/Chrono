@@ -79,3 +79,21 @@ export function formatShortDate(date: ISODate): string {
   const dt = new Date(toUTC(date));
   return `${WEEKDAYS[dt.getUTCDay()]} ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}`;
 }
+
+const WEEKDAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** "Monday the 2nd of November", for speech. */
+export function spokenDate(date: ISODate): string {
+  const dt = new Date(toUTC(date));
+  const d = dt.getUTCDate();
+  const suffix = d % 10 === 1 && d !== 11 ? "st" : d % 10 === 2 && d !== 12 ? "nd" : d % 10 === 3 && d !== 13 ? "rd" : "th";
+  return `${WEEKDAYS_LONG[dt.getUTCDay()]} the ${d}${suffix} of ${MONTHS_LONG[dt.getUTCMonth()]}`;
+}
+
+/** "the 26th", for speech. */
+export function spokenDay(date: ISODate): string {
+  const d = new Date(toUTC(date)).getUTCDate();
+  const suffix = d % 10 === 1 && d !== 11 ? "st" : d % 10 === 2 && d !== 12 ? "nd" : d % 10 === 3 && d !== 13 ? "rd" : "th";
+  return `the ${d}${suffix}`;
+}

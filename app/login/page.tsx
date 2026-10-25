@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { demoLogin, login } from "@/app/actions/auth";
 import { CashChart } from "@/components/CashChart";
+import { AutoTourButton } from "@/components/AutoTour";
 import type { DayPoint } from "@/lib/engine";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -24,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <span className="wordmark-dot" aria-hidden="true" />
         Chrono
       </span>
-      <section className="auth-hero">
+      <section className="auth-hero" data-tour="intro">
         <h1 className="h1" style={{ margin: 0 }}>
           Know before you commit.
         </h1>
@@ -34,12 +35,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <CashChart id="auth" series={heroSeries()} bufferCents={50000} compact onDark />
       </section>
 
-      <form action={demoLogin} style={{ margin: "0 0 1.75rem" }}>
+      <form action={demoLogin} style={{ margin: "0 0 0.6rem" }} data-tour="demo">
         <SubmitButton className="btn btn-wide" pendingLabel="Opening the demo…">Try the demo</SubmitButton>
         <p className="hint" style={{ marginTop: "0.5rem" }}>
           Opens Lerato&apos;s Kitchen, a catering business in Soshanguve, with four months of real-looking history.
         </p>
       </form>
+      <div style={{ margin: "0 0 1.75rem" }}>
+        <AutoTourButton className="btn btn-quiet btn-wide" />
+      </div>
 
       <section className="panel">
         <h2 className="h2" style={{ marginTop: 0 }}>

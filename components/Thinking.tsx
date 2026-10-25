@@ -34,7 +34,7 @@ export function Thinking({ runKey, steps, children }: { runKey: string; steps: s
   const ready = stage >= steps.length;
   return (
     <>
-      <p className="thinking-line" aria-live="polite" title={steps.join("\n")}>
+      <p className="thinking-line" aria-live="polite" title={steps.join("\n")} data-tour="checked">
         {ready ? (
           <>
             <span className="tick tick-done" aria-hidden="true">

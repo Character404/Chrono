@@ -19,7 +19,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           {error}
         </p>
       )}
-      <form action={signup} className="panel">
+      <form action={signup} className="panel" data-tour="signup-form">
         <div className="field">
           <label htmlFor="email">Email</label>
           <input className="input" id="email" name="email" type="email" autoComplete="email" required />
@@ -31,6 +31,60 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
         </div>
         <SubmitButton className="btn btn-wide" pendingLabel="Creating your account…">Create account</SubmitButton>
       </form>
+      <section className="panel reg-process" data-tour="signup-process" style={{ marginTop: "1rem" }}>
+        <p className="label" style={{ margin: 0 }}>
+          How registration works
+        </p>
+        <ol className="reg-steps">
+          <li data-step="1">
+            <strong>Create your account</strong>
+            <span className="small muted">An email and a strong password. That&apos;s this form.</span>
+          </li>
+          <li data-step="2">
+            <strong>Register your business</strong>
+            <span className="small muted">So Chrono only serves real, trading businesses.</span>
+            <div className="reg-preview" aria-label="Example of the business registration details">
+              <span className="reg-field">
+                <span>What you sell</span>
+                <b>Catering</b>
+              </span>
+              <span className="reg-field">
+                <span>Where you trade</span>
+                <b>Soshanguve</b>
+              </span>
+              <span className="reg-field">
+                <span>Trading since</span>
+                <b>2023</b>
+              </span>
+              <span className="reg-field">
+                <span>CIPC registration</span>
+                <b>e.g. 2023/123456/07</b>
+              </span>
+              <span className="reg-field">
+                <span>Mobile number</span>
+                <b>For verification codes</b>
+              </span>
+              <span className="reg-field">
+                <span>Cash today and safety cushion</span>
+                <b>For your forecasts</b>
+              </span>
+            </div>
+          </li>
+          <li data-step="3">
+            <strong>
+              Verification <span className="badge badge-TIGHT">Pilot</span>
+            </strong>
+            <span className="small muted">A partner bank or incubator confirms the business is real before full access.</span>
+          </li>
+          <li data-step="4">
+            <strong>Check your first order</strong>
+            <span className="small muted">Know before you commit.</span>
+          </li>
+        </ol>
+        <p className="small muted" style={{ marginBottom: 0 }}>
+          Prototype: steps 2 and 3 show the full process we&apos;ll run in the pilot; they aren&apos;t live yet. Chrono never asks for bank logins, card details or ID numbers.
+        </p>
+      </section>
       <p className="small muted">
         Already have an account? <Link href="/login">Log in</Link>
       </p>

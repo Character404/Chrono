@@ -8,6 +8,7 @@ import { VerdictBadge } from "@/components/Verdict";
 import { computeImpact } from "@/lib/data/insights";
 import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { CountUp } from "@/components/CountUp";
+import { AutoTourButton } from "@/components/AutoTour";
 import { onboardingComplete, onboardingSteps } from "@/lib/data/onboarding";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export default async function HomePage() {
   return (
     <main className="layout-2">
       <div className="col-main">
-      <section className="hero-card">
+      <section className="hero-card" data-tour="home-hero">
         <div className="hero-top">
           <span className="muted small">{business.name}</span>
         </div>
@@ -120,11 +121,12 @@ export default async function HomePage() {
           </ol>
         </section>
       )}
+      {showTour && <AutoTourButton />}
       {showTour && (
         <Link href={`/orders/${demoWedding?.id}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
           <span className="tour-step">60s</span>
           <span>
-            <strong>New here? Take the 60-second tour.</strong>
+            <strong>Prefer to click through yourself? Take the guided tour.</strong>
             <br />
             See how Chrono spots a cash shortfall that Lerato couldn&apos;t see.
           </span>
@@ -151,7 +153,7 @@ export default async function HomePage() {
       ) : (
         <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {pending.map(({ order, verdict }) => (
-            <Link key={order.id} href={`/orders/${order.id}`} className="row">
+            <Link key={order.id} href={`/orders/${order.id}`} className="row" data-tour={demoWedding && order.id === demoWedding.id ? "wedding" : undefined}>
               <span>
                 <strong>{order.title}</strong>
                 <br />
