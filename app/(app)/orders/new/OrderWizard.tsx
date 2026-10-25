@@ -9,6 +9,7 @@ import {
   COST_CATEGORIES,
   draftToOrderInput,
   validateDraft,
+  validateDraftStep,
   type DraftCost,
   type OrderDraft,
 } from "@/lib/data/order-draft";
@@ -88,6 +89,23 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
 
   function updateCost(key: string, patch: Partial<CostForm>) {
     setCosts((list) => list.map((c) => (c.key === key ? { ...c, ...patch } : c)));
+  }
+
+  /** Moves between steps, but only forward past steps that are filled in correctly. */
+  function goToStep(target: number) {
+    if (target > step) {
+      for (let s = step; s < target; s++) {
+        const stepErrors = validateDraftStep(draft, s);
+        if (stepErrors.length) {
+          setClientErrors(stepErrors);
+          setStep(s);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+    }
+    setClientErrors([]);
+    setStep(target);
   }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -260,14 +278,14 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
 
       <div className="grid-2" style={{ marginTop: "1.5rem" }}>
         {step > 0 ? (
-          <button type="button" className="btn btn-quiet" onClick={() => setStep((s) => s - 1)}>
+          <button type="button" className="btn btn-quiet" onClick={() => goToStep(step - 1)}>
             Back
           </button>
         ) : (
           <span />
         )}
         {step < 2 ? (
-          <button type="button" className="btn" onClick={() => setStep((s) => s + 1)}>
+          <button type="button" className="btn" onClick={() => goToStep(step + 1)}>
             Next
           </button>
         ) : (
