@@ -12,6 +12,8 @@ function hashToken(token: string): string {
 
 /** Creates a session and sets the cookie. Only call from a server action or route handler. */
 export async function createSession(userId: string): Promise<void> {
+  // Housekeeping: remove this user's expired sessions.
+  await prisma.session.deleteMany({ where: { userId, expiresAt: { lt: new Date() } } });
   const token = randomBytes(32).toString("base64url");
   await prisma.session.create({
     data: { userId, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + MAX_AGE_SECONDS * 1000) },

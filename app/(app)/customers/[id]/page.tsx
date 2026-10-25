@@ -5,7 +5,7 @@ import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo } from "@/lib/data/repo";
 import { customerPaymentHistory, summarizeCustomers } from "@/lib/data/insights";
 import { formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
-import { DEMO_IDS } from "@/lib/demo/demo-data";
+import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { TourStep } from "@/components/Tour";
 import { LatenessChart, ReliabilityRing } from "@/components/Reliability";
 
@@ -26,7 +26,7 @@ export default async function CustomerPage({ params, searchParams }: { params: P
   const history = customerPaymentHistory(ctx, id);
   const orders = ctx.orders.filter((o) => o.customerId === id);
   const r = summary.reliability;
-  const pendingCake = orders.find((o) => o.id === DEMO_IDS.cake && o.payments.some((p) => !p.receivedDate));
+  const pendingCake = orders.find((o) => isDemoRecord(o.id, DEMO_IDS.cake) && o.payments.some((p) => !p.receivedDate));
 
   return (
     <main className="page-narrow">
@@ -45,7 +45,7 @@ export default async function CustomerPage({ params, searchParams }: { params: P
 
       {tour === "1" && pendingCake && (
         <TourStep step={5} total={5}>
-          Thabo&apos;s R600 cake balance is still outstanding. <Link href={`/orders/${DEMO_IDS.cake}#record`}>Record it as received today</Link> and come back: Chrono adds it to his history and updates every forecast.
+          Thabo&apos;s R600 cake balance is still outstanding. <Link href={`/orders/${pendingCake.id}#record`}>Record it as received today</Link> and come back: Chrono adds it to his history and updates every forecast.
         </TourStep>
       )}
 

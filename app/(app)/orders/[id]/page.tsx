@@ -16,7 +16,7 @@ import { TourStep } from "@/components/Tour";
 import { Thinking } from "@/components/Thinking";
 import { CashTimeline, OrderSummary, SqueezeCard } from "@/components/CashStory";
 import { shareQuote, stopSharingQuote } from "@/app/actions/records";
-import { DEMO_IDS } from "@/lib/demo/demo-data";
+import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +46,7 @@ export default async function OrderPage({
   const order = orderRowToInput(row);
   const today = todayInJohannesburg();
   const ctx = await repo.loadContext(business, today);
-  const tour = tourParam === "1" && order.id === DEMO_IDS.wedding;
+  const tour = tourParam === "1" && isDemoRecord(order.id, DEMO_IDS.wedding);
   const quote = await repo.getActiveQuote(business.id, order.id);
   const host = (await headers()).get("host");
   const quoteUrl = quote && host ? `${host.startsWith("localhost") ? "http" : "https"}://${host}/q/${quote.token}` : null;
@@ -198,7 +198,7 @@ export default async function OrderPage({
 
       {tour && (
         <TourStep step={4} total={5}>
-          Chrono gets smarter with every payment recorded. <Link href={`/customers/${DEMO_IDS.thabo}?tour=1`}>See what Chrono knows about Thabo</Link>
+          Chrono gets smarter with every payment recorded. <Link href={`/customers/${order.customerId}?tour=1`}>See what Chrono knows about Thabo</Link>
         </TourStep>
       )}
 

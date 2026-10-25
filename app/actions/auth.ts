@@ -4,9 +4,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
-import { clearLoginFailures, isLoginBlocked, recordLoginFailure } from "@/lib/auth/rate-limit";
+import { clearLoginFailures, isLoginBlocked, recordLoginFailure } from "@/lib/auth/attempts";
 import { createSession, destroySession } from "@/lib/auth/session";
-import { ensureDemoUser } from "@/lib/demo/seed-demo";
+import { createPrivateDemo } from "@/lib/demo/seed-demo";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo/demo-data";
 import { todayInJohannesburg } from "@/lib/engine/dates";
 
 const credentials = z.object({
@@ -23,15 +24,18 @@ export async function login(formData: FormData) {
   if (!parsed.success) back("/login", "Enter your email and password.");
   const { email, password } = parsed.data;
 
-  if (isLoginBlocked(email)) back("/login", "Too many attempts. Wait 15 minutes, then try again.");
+  if (await isLoginBlocked(email)) back("/login", "Too many attempts. Wait 15 minutes, then try again.");
+
+  // The shared demo login on our slides opens a fresh private copy, so nobody shares state.
+  if (email === DEMO_EMAIL && password === DEMO_PASSWORD) await openPrivateDemo();
 
   const user = await prisma.user.findUnique({ where: { email } });
   const ok = user ? await verifyPassword(password, user.passwordHash) : false;
   if (!user || !ok) {
-    recordLoginFailure(email);
+    await recordLoginFailure(email);
     back("/login", "That email and password don't match.");
   }
-  clearLoginFailures(email);
+  await clearLoginFailures(email);
   await createSession(user.id);
   redirect("/home");
 }
@@ -49,10 +53,14 @@ export async function signup(formData: FormData) {
   redirect("/setup");
 }
 
-export async function demoLogin() {
-  const user = await ensureDemoUser(prisma, todayInJohannesburg());
+async function openPrivateDemo(): Promise<never> {
+  const user = await createPrivateDemo(prisma, todayInJohannesburg());
   await createSession(user.id);
   redirect("/home");
+}
+
+export async function demoLogin() {
+  await openPrivateDemo();
 }
 
 export async function logout() {

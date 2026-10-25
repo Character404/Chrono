@@ -5,6 +5,8 @@ import { formatRand, formatShortDate } from "@/lib/engine";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 /** Public, read-only quote. Shows only business name, order, total, deposit and dates. */
 export default async function QuotePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireBusiness } from "@/lib/auth/guards";
+import { requireBusiness, requireUser } from "@/lib/auth/guards";
+import { destroySession } from "@/lib/auth/session";
+import { DEMO_EMAIL } from "@/lib/demo/demo-data";
 import { isoToDate } from "@/lib/data/convert";
 import { todayInJohannesburg } from "@/lib/engine/dates";
 import { parseRandInput } from "@/lib/engine/money";
@@ -49,4 +51,22 @@ export async function updateBusiness(formData: FormData) {
   await prisma.business.update({ where: { id: business.id }, data: update });
   revalidatePath("/home");
   redirect("/settings?saved=1");
+}
+
+/**
+ * Permanently deletes the signed-in user and everything they own (POPIA: right to erasure).
+ * Database relations cascade: sessions, business, customers, orders, payments, costs,
+ * commitments and quote links are all removed.
+ */
+export async function deleteAccount(formData: FormData) {
+  const user = await requireUser();
+  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "DELETE") {
+    redirect(`/settings?error=${encodeURIComponent('Type DELETE to confirm.')}`);
+  }
+  if (user.email === DEMO_EMAIL) {
+    redirect(`/settings?error=${encodeURIComponent("The shared demo record can't be deleted.")}`);
+  }
+  await destroySession();
+  await prisma.user.delete({ where: { id: user.id } });
+  redirect("/login?deleted=1");
 }
