@@ -15,9 +15,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <span className="wordmark-dot" aria-hidden="true" />
           Chrono
         </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+          <Link href="/settings" className="linkish" aria-label="Business settings">
+            Settings
+          </Link>
         <form action={logout}>
           <SubmitButton className="linkish" pendingLabel="Logging out…">Log out</SubmitButton>
         </form>
+        </div>
       </header>
       <NavTabs />
       {user.isDemo && (

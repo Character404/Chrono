@@ -7,6 +7,7 @@ import { customerPaymentHistory, summarizeCustomers } from "@/lib/data/insights"
 import { formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
 import { DEMO_IDS } from "@/lib/demo/demo-data";
 import { TourStep } from "@/components/Tour";
+import { LatenessChart, ReliabilityRing } from "@/components/Reliability";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +33,15 @@ export default async function CustomerPage({ params, searchParams }: { params: P
       <Link href="/customers" className="small muted">
         All customers
       </Link>
-      <h1 className="h1">{customer.name}</h1>
-      <p style={{ marginTop: 0, fontWeight: 600, color: r.shiftDays > 0 ? "var(--tight)" : "var(--ink)" }}>{summary.summary}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", margin: "0.4rem 0 1rem" }}>
+        <ReliabilityRing onTimeRate={r.onTimeRate} hasHistory={r.scope === "CUSTOMER"} size={68} />
+        <div>
+          <h1 className="h1" style={{ margin: 0 }}>
+            {customer.name}
+          </h1>
+          <span className={`badge ${r.scope !== "CUSTOMER" ? "" : r.shiftDays > 0 ? "badge-TIGHT" : "badge-SAFE"}`}>{summary.summary}</span>
+        </div>
+      </div>
 
       {tour === "1" && pendingCake && (
         <TourStep step={5} total={5}>
@@ -59,6 +67,15 @@ export default async function CustomerPage({ params, searchParams }: { params: P
           <p style={{ margin: 0 }}>Record at least two payments from this customer and Chrono will start learning how they pay.</p>
         )}
       </section>
+
+      {history.length > 0 && (
+        <section className="panel" style={{ marginTop: "1rem" }}>
+          <p className="label" style={{ marginTop: 0 }}>
+            Days late, payment by payment
+          </p>
+          <LatenessChart rows={history} />
+        </section>
+      )}
 
       <h2 className="h2">Payment history</h2>
       {history.length === 0 ? (

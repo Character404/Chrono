@@ -1155,3 +1155,152 @@ a.row:hover {
     width: 100%;
   }
 }
+
+/* ---------- Customers, payments, settings, onboarding ---------- */
+.ring {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.bar-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar-grow {
+    animation: grow 600ms var(--ease) both;
+  }
+  @keyframes grow {
+    from {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+  }
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.empty {
+  text-align: center;
+  padding: 1.75rem 1.25rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+}
+
+.flow-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+.flow-out {
+  color: var(--short);
+  background: var(--short-bg);
+}
+
+.flow-in {
+  color: var(--safe);
+  background: var(--safe-bg);
+}
+
+.setting-block {
+  padding: 0.9rem 0;
+  margin-bottom: 0.9rem;
+  border-top: 1px solid var(--line);
+}
+
+.success-box {
+  border: 1px solid color-mix(in srgb, var(--safe) 40%, transparent);
+  background: var(--safe-bg);
+  border-radius: 14px;
+  padding: 0.75rem 0.95rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.checklist {
+  margin-bottom: 1rem;
+  border-color: color-mix(in srgb, var(--g-sky) 40%, var(--line));
+}
+
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--g-sky), var(--g-up));
+  transition: width 600ms var(--ease);
+}
+
+.check-item {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding-left: 0 !important;
+}
+
+.check-item::before {
+  display: none;
+}
+
+.check-item[data-done="true"] .tick {
+  border-color: var(--g-up);
+  background: var(--g-up);
+}
+
+.check-item[data-next="true"] .tick {
+  border-color: var(--g-sky);
+}
+
+.check-item[data-done="true"] strong {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.check-item a {
+  text-decoration-color: var(--g-sky);
+  text-underline-offset: 3px;
+}
+
+.row .badge {
+  white-space: normal;
+  text-align: right;
+  line-height: 1.3;
+}

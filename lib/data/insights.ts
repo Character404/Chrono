@@ -45,7 +45,8 @@ export interface CustomerSummary {
 
 export function describeReliability(r: CustomerReliability): string {
   if (r.scope !== "CUSTOMER") return "Not enough payment history yet";
-  if (r.shiftDays === 0) return r.onTimeRate >= 0.75 ? "Usually pays on time" : "Usually pays within a day or so";
+  // Up to a day late counts as on time, matching how the on-time rate is measured.
+  if (r.shiftDays <= 1) return r.onTimeRate >= 0.75 ? "Usually pays on time" : "Usually pays within a day or so";
   return `Usually about ${r.shiftDays} day${r.shiftDays === 1 ? "" : "s"} late`;
 }
 
