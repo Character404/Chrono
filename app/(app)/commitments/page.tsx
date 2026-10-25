@@ -16,6 +16,13 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
   const rows = await createRepo(prisma).listCommitments(business.id);
   const commitments = rows.map(commitmentRowToInput);
   const today = todayInJohannesburg();
+  // A rough monthly picture: weekly items count about 4.33 times a month, one-offs aren't included.
+  const monthly = (dir: "IN" | "OUT") =>
+    commitments
+      .filter((c) => c.active && c.direction === dir && c.recurrence !== "NONE")
+      .reduce((s, c) => s + (c.recurrence === "WEEKLY" ? Math.round((c.amountCents * 52) / 12) : c.amountCents), 0);
+  const outMonthly = monthly("OUT");
+  const inMonthly = monthly("IN");
 
   return (
     <main className="page-narrow">
@@ -24,18 +31,42 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
         Rent, stock, transport, data, loan repayments, or money you expect in. Chrono counts these in every order check.
       </p>
 
+      {commitments.length > 0 && (
+        <div className="stat-row">
+          <div className="stat">
+            <span className="stat-value num">{formatRand(outMonthly)}</span>
+            <span className="small muted">goes out each month</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value num" style={{ color: inMonthly ? "var(--safe)" : "var(--muted)" }}>
+              {formatRand(inMonthly)}
+            </span>
+            <span className="small muted">comes in each month</span>
+          </div>
+        </div>
+      )}
       {commitments.length === 0 ? (
-        <p className="muted">Nothing added yet. Start with rent or your biggest regular cost.</p>
+        <div className="empty">
+          <p style={{ margin: 0, fontWeight: 700 }}>No regular payments yet</p>
+          <p className="small muted" style={{ margin: "0.25rem 0 0" }}>
+            Start with rent or your biggest regular cost. Chrono counts these in every order check.
+          </p>
+        </div>
       ) : (
         <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {commitments.map((c) => (
             <div key={c.id} className="row">
-              <span>
+              <span style={{ display: "flex", gap: "0.7rem", alignItems: "center" }}>
+                <span className={`flow-icon ${c.direction === "IN" ? "flow-in" : "flow-out"}`} aria-hidden="true">
+                  {c.direction === "IN" ? "↓" : "↑"}
+                </span>
+                <span>
                 <strong>{c.description}</strong>
                 <br />
                 <span className="small muted">
                   {REPEAT_LABEL[c.recurrence]}, from {formatShortDate(c.startDate)}
                   {c.endDate ? ` until ${formatShortDate(c.endDate)}` : ""}
+                </span>
                 </span>
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>

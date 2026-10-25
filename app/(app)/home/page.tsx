@@ -8,6 +8,7 @@ import { VerdictBadge } from "@/components/Verdict";
 import { computeImpact } from "@/lib/data/insights";
 import { DEMO_IDS } from "@/lib/demo/demo-data";
 import { CountUp } from "@/components/CountUp";
+import { onboardingComplete, onboardingSteps } from "@/lib/data/onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,9 @@ export default async function HomePage() {
   const accepted = ctx.orders.filter((o) => o.status === "ACCEPTED");
   const customerName = (id: string) => ctx.customers.find((c) => c.id === id)?.name ?? "";
   const impact = computeImpact(ctx);
+  const steps = onboardingSteps(ctx);
+  const showChecklist = !user.isDemo && !onboardingComplete(steps);
+  const nextStep = steps.find((st) => !st.done);
   const showTour = user.isDemo && drafts.some((o) => o.id === DEMO_IDS.wedding);
 
   return (
@@ -92,6 +96,33 @@ export default async function HomePage() {
 
       </div>
       <div className="col-side">
+      {showChecklist && (
+        <section className="panel checklist">
+          <p className="label" style={{ margin: 0 }}>
+            Get set up
+          </p>
+          <p className="small muted" style={{ margin: "0.15rem 0 0.75rem" }}>
+            {steps.filter((st) => st.done).length} of {steps.length} done. Each step makes your forecasts more accurate.
+          </p>
+          <div className="progress" aria-hidden="true">
+            <span style={{ width: `${(steps.filter((st) => st.done).length / steps.length) * 100}%` }} />
+          </div>
+          <ol className="list-plain" style={{ marginTop: "0.9rem" }}>
+            {steps.map((st) => (
+              <li key={st.key} className="check-item" data-done={st.done} data-next={st === nextStep}>
+                <span className="tick" aria-hidden="true">
+                  {st.done ? "✓" : ""}
+                </span>
+                <span>
+                  {st.done || st.key === "record" ? <strong>{st.title}</strong> : <Link href={st.href}><strong>{st.title}</strong></Link>}
+                  <br />
+                  <span className="small muted">{st.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
       {showTour && (
         <Link href={`/orders/${DEMO_IDS.wedding}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
           <span className="tour-step">60s</span>
