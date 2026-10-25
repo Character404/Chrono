@@ -143,6 +143,17 @@ export default async function HomePage() {
         </p>
       )}
 
+      <Link href="/summary" className="summary-link">
+        <span className="summary-link-icon" aria-hidden="true">
+          ▤
+        </span>
+        <span>
+          <strong>Monthly summary</strong>
+          <br />
+          <span className="small muted">Your month in plain words, ready to share as a PDF.</span>
+        </span>
+      </Link>
+
       <Link href="/orders/new" className="btn btn-wide" style={{ margin: "0.5rem 0 1.5rem" }}>
         Check a new order
       </Link>
