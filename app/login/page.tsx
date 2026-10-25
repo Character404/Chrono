@@ -4,6 +4,7 @@ import { CashChart } from "@/components/CashChart";
 import { AutoTourButton } from "@/components/AutoTour";
 import type { DayPoint } from "@/lib/engine";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PasswordInput } from "@/components/PasswordInput";
 
 /** A made-up month for the hero graphic: looks fine, then dips below R0 before a late payment lands. */
 function heroSeries(): DayPoint[] {
@@ -66,13 +67,16 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input className="input" id="password" name="password" type="password" autoComplete="current-password" required minLength={8} />
+            <PasswordInput id="password" name="password" autoComplete="current-password" />
           </div>
           <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Logging in…">Log in</SubmitButton>
         </form>
-        <p className="small muted" style={{ marginBottom: 0 }}>
-          New here? <Link href="/signup">Create an account</Link>
-        </p>
+        <div className="create-account">
+          <span className="small muted">New here?</span>
+          <Link href="/signup" className="btn btn-outline btn-wide">
+            Create an account
+          </Link>
+        </div>
       </section>
     </main>
   );

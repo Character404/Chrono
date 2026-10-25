@@ -1972,3 +1972,59 @@ details.more[open] > summary::before {
     opacity: 0;
   }
 }
+
+/* ---------- Password eye and Create account ---------- */
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-right: 3.2rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--g-sky);
+  outline-offset: 2px;
+}
+
+.create-account {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--brand);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+}
