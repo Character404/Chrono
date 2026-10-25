@@ -142,3 +142,14 @@ export function parseDraftJson(json: string): OrderDraft | null {
     return null;
   }
 }
+
+/** Which wizard step each check belongs to: 0 = the order, 1 = getting paid, 2 = costs. */
+const STEP_OF_ERROR: [RegExp, number][] = [
+  [/customer|order a short name|order name|in total/i, 0],
+  [/deposit|balance/i, 1],
+];
+
+/** Only the problems on one step of the order form, so Next can stop on that step. */
+export function validateDraftStep(draft: OrderDraft, step: number): string[] {
+  return validateDraft(draft).filter((e) => (STEP_OF_ERROR.find(([re]) => re.test(e))?.[1] ?? 2) === step);
+}

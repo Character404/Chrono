@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { draftToOrderInput, parseDraftJson, validateDraft, type OrderDraft } from "../order-draft";
+import { draftToOrderInput, parseDraftJson, validateDraft, validateDraftStep, type OrderDraft } from "../order-draft";
 import { validateOrder } from "../../engine/forecast";
 
 const draft: OrderDraft = {
@@ -48,5 +48,36 @@ describe("Order drafts", () => {
     expect(evil.valueCents).toBe(-1);
     expect(evil.costs[0].category).toBe("OTHER");
     expect(validateDraft(evil).length).toBeGreaterThan(0);
+  });
+});
+
+describe("Order form steps", () => {
+  const empty: OrderDraft = {
+    customerId: null,
+    newCustomerName: "",
+    title: "",
+    valueCents: 0,
+    deposit: { amountCents: 0, date: "2026-10-24" },
+    balance: { date: "2026-10-31", certainty: "ESTIMATED" },
+    costs: [],
+  };
+
+  it("won't leave step 1 without a customer, an order name and a total", () => {
+    const errors = validateDraftStep(empty, 0);
+    expect(errors.length).toBe(3);
+    expect(validateDraftStep({ ...empty, newCustomerName: "Thabo", title: "Wedding", valueCents: 500000 }, 0)).toEqual([]);
+  });
+
+  it("checks the deposit on step 2 only", () => {
+    const filled = { ...empty, newCustomerName: "Thabo", title: "Wedding", valueCents: 500000 };
+    expect(validateDraftStep(filled, 1)).toEqual([]);
+    expect(validateDraftStep({ ...filled, deposit: { amountCents: 900000, date: "2026-10-24" } }, 1)).toEqual(["The deposit can't be more than the order value."]);
+    expect(validateDraftStep({ ...filled, deposit: { amountCents: 900000, date: "2026-10-24" } }, 0)).toEqual([]);
+  });
+
+  it("checks costs on step 3", () => {
+    const filled = { ...empty, newCustomerName: "Thabo", title: "Wedding", valueCents: 500000, costs: [{ description: "", amountCents: 0, category: "MATERIALS", date: "2026-10-26", certainty: "ESTIMATED" }] } as unknown as OrderDraft;
+    expect(validateDraftStep(filled, 2).length).toBe(2);
+    expect(validateDraftStep(filled, 0)).toEqual([]);
   });
 });
