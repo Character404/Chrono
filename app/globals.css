@@ -156,7 +156,7 @@ a {
   top: 0.5rem;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.2rem;
   padding: 0.3rem;
   margin-bottom: 1.4rem;
@@ -2171,5 +2171,39 @@ details.more[open] > summary::before {
   .tour-top {
     grid-template-columns: 1fr 1fr;
     align-items: stretch;
+  }
+}
+
+/* Auto demo and Manual demo sit side by side at the top of the login page and Home. */
+.tour-top {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+
+.tour-top form,
+.tour-top .btn {
+  width: 100%;
+  margin: 0;
+}
+
+/* Five tabs on phones: slightly smaller labels so they all fit. */
+@media (max-width: 759px) {
+  .tabs a {
+    font-size: 0.64rem;
+    padding: 0.4rem 0;
+  }
+}
+
+/* Demo buttons stay on one line. */
+.tour-top .btn {
+  white-space: nowrap;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+/* Desktop: the wider top tab bar fits five tabs. */
+@media (min-width: 960px) {
+  .shell-app .tabs {
+    max-width: 42rem;
   }
 }

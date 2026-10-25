@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { demoLogin, login } from "@/app/actions/auth";
+import { demoLogin, login, manualDemo } from "@/app/actions/auth";
+import { AutoTourButton } from "@/components/AutoTour";
 import { CashChart } from "@/components/CashChart";
 import type { DayPoint } from "@/lib/engine";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -21,6 +22,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { error, deleted } = await searchParams;
   return (
     <main className="shell" style={{ paddingTop: "2.5rem" }}>
+      <div className="tour-top">
+        <AutoTourButton />
+        <form action={manualDemo}>
+          <SubmitButton className="btn btn-outline btn-wide" pendingLabel="Opening">
+            Manual demo
+          </SubmitButton>
+        </form>
+      </div>
       <span className="wordmark">
         <span className="wordmark-dot" aria-hidden="true" />
         Chrono
