@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo } from "@/lib/data/repo";
-import { customerPaymentHistory, summarizeCustomers } from "@/lib/data/insights";
+import { customerPaymentHistory, reliabilityTone, summarizeCustomers } from "@/lib/data/insights";
 import { formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
 import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { TourStep } from "@/components/Tour";
@@ -39,7 +39,7 @@ export default async function CustomerPage({ params, searchParams }: { params: P
           <h1 className="h1" style={{ margin: 0 }}>
             {customer.name}
           </h1>
-          <span className={`badge ${r.scope !== "CUSTOMER" ? "" : r.shiftDays > 0 ? "badge-TIGHT" : "badge-SAFE"}`}>{summary.summary}</span>
+          <span className={`badge ${reliabilityTone(r)}`}>{summary.summary}</span>
         </div>
       </div>
 

@@ -43,6 +43,17 @@ export interface CustomerSummary {
   orderCount: number;
 }
 
+/** Late means more than a day late, matching how the on-time rate is measured. */
+export function isLatePayer(r: CustomerReliability): boolean {
+  return r.scope === "CUSTOMER" && r.shiftDays > 1;
+}
+
+/** Badge colour for a customer's reliability. */
+export function reliabilityTone(r: CustomerReliability): "" | "badge-TIGHT" | "badge-SAFE" {
+  if (r.scope !== "CUSTOMER") return "";
+  return isLatePayer(r) ? "badge-TIGHT" : "badge-SAFE";
+}
+
 export function describeReliability(r: CustomerReliability): string {
   if (r.scope !== "CUSTOMER") return "Not enough payment history yet";
   // Up to a day late counts as on time, matching how the on-time rate is measured.

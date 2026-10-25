@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildDemoData, DEMO_IDS } from "../../demo/demo-data";
-import { computeImpact, customerPaymentHistory, describeReliability, summarizeCustomers } from "../insights";
+import { computeImpact, customerPaymentHistory, describeReliability, isLatePayer, reliabilityTone, summarizeCustomers } from "../insights";
 import type { BusinessContext } from "../repo";
 
 const today = "2026-10-24";
@@ -32,6 +32,14 @@ describe("Insights", () => {
     expect(rows).toHaveLength(4);
     expect(rows[0].receivedDate >= rows[1].receivedDate).toBe(true);
     expect(rows.every((r) => r.daysLate >= 6)).toBe(true);
+  });
+
+  it("colours and counts customers the same way it describes them", () => {
+    for (const c of summarizeCustomers(ctx)) {
+      const saysLate = c.summary.includes("late");
+      expect(isLatePayer(c.reliability)).toBe(saysLate);
+      if (c.reliability.scope === "CUSTOMER") expect(reliabilityTone(c.reliability)).toBe(saysLate ? "badge-TIGHT" : "badge-SAFE");
+    }
   });
 
   it("says when there isn't enough history", () => {

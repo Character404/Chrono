@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo } from "@/lib/data/repo";
-import { summarizeCustomers } from "@/lib/data/insights";
+import { isLatePayer, reliabilityTone, summarizeCustomers } from "@/lib/data/insights";
 import { todayInJohannesburg } from "@/lib/engine";
 import { ReliabilityRing } from "@/components/Reliability";
 
@@ -12,7 +12,7 @@ export default async function CustomersPage() {
   const { business } = await requireBusiness();
   const ctx = await createRepo(prisma).loadContext(business, todayInJohannesburg());
   const customers = summarizeCustomers(ctx).sort((a, b) => b.reliability.shiftDays - a.reliability.shiftDays || a.name.localeCompare(b.name));
-  const late = customers.filter((c) => c.reliability.scope === "CUSTOMER" && c.reliability.shiftDays > 0).length;
+  const late = customers.filter((c) => isLatePayer(c.reliability)).length;
 
   return (
     <main className="page-narrow">
@@ -47,18 +47,15 @@ export default async function CustomersPage() {
       ) : (
         <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {customers.map((c) => (
-            <Link key={c.id} href={`/customers/${c.id}`} className="row">
-              <span style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-                <ReliabilityRing onTimeRate={c.reliability.onTimeRate} hasHistory={c.reliability.scope === "CUSTOMER"} />
-                <span>
-                  <strong>{c.name}</strong>
-                  <br />
-                  <span className="small muted">
-                    {c.orderCount} order{c.orderCount === 1 ? "" : "s"}
-                  </span>
-                </span>
+            <Link key={c.id} href={`/customers/${c.id}`} className="row customer-row">
+              <ReliabilityRing onTimeRate={c.reliability.onTimeRate} hasHistory={c.reliability.scope === "CUSTOMER"} />
+              <span className="customer-main">
+                <strong>{c.name}</strong>
+                <span className={`badge ${reliabilityTone(c.reliability)}`}>{c.summary}</span>
               </span>
-              <span className={`badge ${c.reliability.scope !== "CUSTOMER" ? "" : c.reliability.shiftDays > 0 ? "badge-TIGHT" : "badge-SAFE"}`}>{c.summary}</span>
+              <span className="small muted num">
+                {c.orderCount} order{c.orderCount === 1 ? "" : "s"}
+              </span>
             </Link>
           ))}
         </div>
