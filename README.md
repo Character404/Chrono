@@ -86,3 +86,8 @@ Key rules the engine follows:
 - Every database query goes through `lib/data/repo.ts`, which always filters by the signed-in user's business. Tests in `lib/data/__tests__/repo.test.ts` prove one business can't read, change or delete another's data.
 - All form input is validated on the server. Money calculations run only in the tested engine.
 - Secrets live only in Codespaces and Vercel environment variables, never in the repository.
+- Security headers on every response (Content-Security-Policy, no framing, no MIME sniffing, strict referrer, HSTS in production), set in `middleware.ts`.
+- Every "Try the demo" creates a private copy of the demo business, deleted after 24 hours, so visitors never share or break each other's data.
+- Failed logins are rate-limited in the database (5 per 15 minutes per email), storing only a hash of the email.
+- Users can permanently delete their account and all business data from Settings.
+- Dependencies are monitored by Dependabot, code is scanned by CodeQL, and secret scanning blocks leaked credentials.

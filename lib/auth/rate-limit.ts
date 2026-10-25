@@ -1,28 +1,11 @@
 /**
- * Simple login rate limit: at most 5 failed attempts per email per 15 minutes.
- * In-memory, so it resets when a server instance restarts. Good enough for the
- * prototype; production would use a shared store.
+ * Login rate-limit rule: at most 5 failed attempts per email in 15 minutes.
+ * The counting is stored in the database (see attempts.ts), so it survives
+ * server restarts and works across every server instance.
  */
-const WINDOW_MS = 15 * 60 * 1000;
-const MAX_FAILURES = 5;
-const failures = new Map<string, { count: number; since: number }>();
+export const WINDOW_MS = 15 * 60 * 1000;
+export const MAX_FAILURES = 5;
 
-export function isLoginBlocked(key: string, now = Date.now()): boolean {
-  const entry = failures.get(key);
-  if (!entry) return false;
-  if (now - entry.since > WINDOW_MS) {
-    failures.delete(key);
-    return false;
-  }
-  return entry.count >= MAX_FAILURES;
-}
-
-export function recordLoginFailure(key: string, now = Date.now()): void {
-  const entry = failures.get(key);
-  if (!entry || now - entry.since > WINDOW_MS) failures.set(key, { count: 1, since: now });
-  else entry.count++;
-}
-
-export function clearLoginFailures(key: string): void {
-  failures.delete(key);
+export function shouldBlock(recentFailures: number): boolean {
+  return recentFailures >= MAX_FAILURES;
 }

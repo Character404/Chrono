@@ -16,8 +16,8 @@ function heroSeries(): DayPoint[] {
   }));
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; deleted?: string }> }) {
+  const { error, deleted } = await searchParams;
   return (
     <main className="shell" style={{ paddingTop: "2.5rem" }}>
       <span className="wordmark">
@@ -45,6 +45,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <h2 className="h2" style={{ marginTop: 0 }}>
           Log in
         </h2>
+        {deleted && (
+          <p className="success-box" role="status">
+            Your account and all its data have been deleted.
+          </p>
+        )}
         {error && (
           <p className="error-box" role="alert">
             {error}

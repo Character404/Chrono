@@ -6,7 +6,7 @@ import { analyzeOrder, forecast, formatRand, formatShortDate, todayInJohannesbur
 import { CashChart } from "@/components/CashChart";
 import { VerdictBadge } from "@/components/Verdict";
 import { computeImpact } from "@/lib/data/insights";
-import { DEMO_IDS } from "@/lib/demo/demo-data";
+import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { CountUp } from "@/components/CountUp";
 import { onboardingComplete, onboardingSteps } from "@/lib/data/onboarding";
 
@@ -34,7 +34,8 @@ export default async function HomePage() {
   const steps = onboardingSteps(ctx);
   const showChecklist = !user.isDemo && !onboardingComplete(steps);
   const nextStep = steps.find((st) => !st.done);
-  const showTour = user.isDemo && drafts.some((o) => o.id === DEMO_IDS.wedding);
+  const demoWedding = user.isDemo ? drafts.find((o) => isDemoRecord(o.id, DEMO_IDS.wedding)) : undefined;
+  const showTour = !!demoWedding;
 
   return (
     <main className="layout-2">
@@ -120,7 +121,7 @@ export default async function HomePage() {
         </section>
       )}
       {showTour && (
-        <Link href={`/orders/${DEMO_IDS.wedding}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
+        <Link href={`/orders/${demoWedding?.id}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
           <span className="tour-step">60s</span>
           <span>
             <strong>New here? Take the 60-second tour.</strong>

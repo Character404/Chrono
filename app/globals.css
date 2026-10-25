@@ -1485,3 +1485,8 @@ details.more > summary::before {
 details.more[open] > summary::before {
   content: "− ";
 }
+
+.danger-zone {
+  margin-top: 2rem;
+  border-color: color-mix(in srgb, var(--short) 35%, var(--line));
+}

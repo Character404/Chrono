@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { clearLoginFailures, isLoginBlocked, recordLoginFailure } from "../rate-limit";
+import { MAX_FAILURES, shouldBlock, WINDOW_MS } from "../rate-limit";
 
-describe("Login rate limit", () => {
-  it("blocks after 5 failures and unblocks after 15 minutes", () => {
-    const key = "test@example.com";
-    const t0 = 1_000_000;
-    for (let i = 0; i < 5; i++) recordLoginFailure(key, t0);
-    expect(isLoginBlocked(key, t0 + 1000)).toBe(true);
-    expect(isLoginBlocked(key, t0 + 16 * 60 * 1000)).toBe(false);
+describe("Login rate limit rule", () => {
+  it("allows up to 4 recent failures and blocks at 5", () => {
+    expect(shouldBlock(0)).toBe(false);
+    expect(shouldBlock(MAX_FAILURES - 1)).toBe(false);
+    expect(shouldBlock(MAX_FAILURES)).toBe(true);
   });
 
-  it("clears after a successful login", () => {
-    const key = "ok@example.com";
-    for (let i = 0; i < 5; i++) recordLoginFailure(key);
-    clearLoginFailures(key);
-    expect(isLoginBlocked(key)).toBe(false);
+  it("uses a 15-minute window", () => {
+    expect(WINDOW_MS).toBe(15 * 60 * 1000);
   });
 });

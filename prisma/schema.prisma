@@ -189,3 +189,12 @@ model QuoteShare {
 
   @@index([orderId])
 }
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  /// SHA-256 of the lower-cased email, so failed logins never store an email address.
+  keyHash   String
+  createdAt DateTime @default(now())
+
+  @@index([keyHash, createdAt])
+}

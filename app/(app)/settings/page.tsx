@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo, forecastInputFor } from "@/lib/data/repo";
 import { forecast, formatRand, todayInJohannesburg } from "@/lib/engine";
-import { updateBusiness } from "@/app/actions/settings";
+import { deleteAccount, updateBusiness } from "@/app/actions/settings";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           {error}
         </p>
       )}
-      {user.isDemo && <p className="demo-flag">You can change the demo&apos;s settings. They reset tomorrow.</p>}
+      {user.isDemo && <p className="demo-flag">This is your private copy of the demo. Change anything you like: it&apos;s deleted after 24 hours.</p>}
 
       <form action={updateBusiness} className="panel">
         <div className="field">
@@ -65,6 +65,24 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           Save settings
         </SubmitButton>
       </form>
+
+      <section className="panel danger-zone">
+        <h2 className="h2" style={{ marginTop: 0 }}>
+          Delete my account
+        </h2>
+        <p className="small muted" style={{ marginTop: 0 }}>
+          This permanently deletes your account and all your business data: orders, customers, payments and regular payments. It can&apos;t be undone.
+        </p>
+        <form action={deleteAccount}>
+          <div className="field">
+            <label htmlFor="confirm">Type DELETE to confirm</label>
+            <input className="input" id="confirm" name="confirm" autoComplete="off" required pattern="[Dd][Ee][Ll][Ee][Tt][Ee]" />
+          </div>
+          <SubmitButton className="btn btn-danger btn-wide" pendingLabel="Deleting…">
+            Delete my account and data
+          </SubmitButton>
+        </form>
+      </section>
     </main>
   );
 }

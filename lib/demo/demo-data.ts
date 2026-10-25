@@ -216,7 +216,7 @@ function buildWithOpening(today: ISODate, openingRands: number): DemoData {
 
 /** The forecast input for checking the demo wedding order. */
 export function demoWeddingInput(data: DemoData, today: ISODate) {
-  const wedding = data.orders.find((o) => o.id === DEMO_IDS.wedding)!;
+  const wedding = data.orders.find((o) => isDemoRecord(o.id, DEMO_IDS.wedding))!;
   return {
     today,
     business: data.business,
@@ -252,4 +252,26 @@ export function buildDemoData(today: ISODate): DemoData {
     }
   }
   return buildWithOpening(today, 6500);
+}
+
+/** True when an id is one of the demo's fixed records, or a visitor's private copy of it. */
+export function isDemoRecord(id: string, base: string): boolean {
+  return id === base || id.endsWith(`_${base}`);
+}
+
+/** Gives every record a unique prefix, so each visitor gets an independent private copy. */
+export function prefixDemoData(data: DemoData, prefix: string): DemoData {
+  const p = (id: string) => `${prefix}${id}`;
+  return {
+    business: data.business,
+    customers: data.customers.map((c) => ({ ...c, id: p(c.id) })),
+    orders: data.orders.map((o) => ({
+      ...o,
+      id: p(o.id),
+      customerId: p(o.customerId),
+      payments: o.payments.map((x) => ({ ...x, id: p(x.id) })),
+      costs: o.costs.map((x) => ({ ...x, id: p(x.id) })),
+    })),
+    commitments: data.commitments.map((c) => ({ ...c, id: p(c.id) })),
+  };
 }
