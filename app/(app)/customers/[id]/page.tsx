@@ -28,7 +28,7 @@ export default async function CustomerPage({ params, searchParams }: { params: P
   const pendingCake = orders.find((o) => o.id === DEMO_IDS.cake && o.payments.some((p) => !p.receivedDate));
 
   return (
-    <main>
+    <main className="page-narrow">
       <Link href="/customers" className="small muted">
         All customers
       </Link>

@@ -2,22 +2,21 @@ import Link from "next/link";
 import { requireBusiness } from "@/lib/auth/guards";
 import { logout } from "@/app/actions/auth";
 import { NavTabs } from "@/components/NavTabs";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, business } = await requireBusiness();
   return (
-    <div className="shell">
+    <div className="shell shell-app">
       <header className="topbar">
         <Link href="/home" className="wordmark">
           <span className="wordmark-dot" aria-hidden="true" />
           Chrono
         </Link>
         <form action={logout}>
-          <button className="linkish" type="submit">
-            Log out
-          </button>
+          <SubmitButton className="linkish" pendingLabel="Logging out…">Log out</SubmitButton>
         </form>
       </header>
       <NavTabs />

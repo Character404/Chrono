@@ -4,6 +4,7 @@ import { createRepo } from "@/lib/data/repo";
 import { commitmentRowToInput } from "@/lib/data/convert";
 import { formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
 import { addCommitment, removeCommitment } from "@/app/actions/commitments";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
   const today = todayInJohannesburg();
 
   return (
-    <main>
+    <main className="page-narrow">
       <h1 className="h1">Regular payments</h1>
       <p className="muted" style={{ marginTop: 0 }}>
         Rent, stock, transport, data, loan repayments, or money you expect in. Chrono counts these in every order check.
@@ -44,9 +45,9 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
                 </strong>
                 <form action={removeCommitment}>
                   <input type="hidden" name="id" value={c.id} />
-                  <button className="linkish" type="submit" aria-label={`Remove ${c.description}`}>
+                  <SubmitButton className="linkish" pendingLabel="Removing…" ariaLabel={`Remove ${c.description}`}>
                     Remove
-                  </button>
+                  </SubmitButton>
                 </form>
               </span>
             </div>
@@ -102,9 +103,7 @@ export default async function CommitmentsPage({ searchParams }: { searchParams: 
             <input className="input" id="endDate" name="endDate" type="date" />
           </div>
         </div>
-        <button className="btn btn-wide" type="submit">
-          Add payment
-        </button>
+        <SubmitButton className="btn btn-wide" pendingLabel="Adding…">Add payment</SubmitButton>
       </form>
     </main>
   );

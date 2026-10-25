@@ -1,5 +1,6 @@
 import { completeOrder, recordCost, recordPayment } from "@/app/actions/records";
 import { diffDays, formatRand, formatShortDate, type ISODate, type OrderInput } from "@/lib/engine";
+import { SubmitButton } from "@/components/SubmitButton";
 
 function lateness(expected: ISODate | null, received: ISODate): string {
   if (!expected) return "";
@@ -40,9 +41,7 @@ export function RecordActuals({ order, today }: { order: OrderInput; today: ISOD
                   <input className="input" type="date" name="date" defaultValue={today} max={today} aria-label="Date received" />
                   <input className="input num" name="amount" inputMode="decimal" defaultValue={String(p.amountCents / 100)} aria-label="Amount received (R)" />
                 </div>
-                <button className="btn btn-quiet" type="submit">
-                  Mark as received
-                </button>
+                <SubmitButton className="btn btn-quiet" pendingLabel="Recording…">Mark as received</SubmitButton>
               </form>
             )}
           </div>
@@ -64,9 +63,7 @@ export function RecordActuals({ order, today }: { order: OrderInput; today: ISOD
                   <input className="input" type="date" name="date" defaultValue={today} max={today} aria-label="Date paid" />
                   <input className="input num" name="amount" inputMode="decimal" defaultValue={String(c.estimatedCents / 100)} aria-label="Amount paid (R)" />
                 </div>
-                <button className="btn btn-quiet" type="submit">
-                  Mark as paid
-                </button>
+                <SubmitButton className="btn btn-quiet" pendingLabel="Recording…">Mark as paid</SubmitButton>
               </form>
             )}
           </div>
@@ -76,9 +73,7 @@ export function RecordActuals({ order, today }: { order: OrderInput; today: ISOD
       {settled && order.status === "ACCEPTED" && (
         <form action={completeOrder} style={{ marginTop: "0.75rem" }}>
           <input type="hidden" name="orderId" value={order.id} />
-          <button className="btn btn-wide" type="submit">
-            Mark order complete
-          </button>
+          <SubmitButton className="btn btn-wide" pendingLabel="Completing…">Mark order complete</SubmitButton>
         </form>
       )}
     </section>

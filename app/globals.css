@@ -986,3 +986,172 @@ a.row:hover {
     animation: none;
   }
 }
+
+/* ============================================================
+   Layout system: phone first, then a real desktop layout
+   ============================================================ */
+:root {
+  --nav-h: calc(78px + env(safe-area-inset-bottom, 0px));
+}
+
+.tab-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Phones: app-style bottom navigation */
+@media (max-width: 759px) {
+  .shell-app {
+    padding-bottom: calc(var(--nav-h) + 5rem);
+  }
+  .tabs {
+    position: fixed;
+    top: auto;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    margin: 0;
+    z-index: 30;
+    padding: 0.35rem;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px -10px rgba(12, 34, 40, 0.35);
+  }
+  .tabs a {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    padding: 0.4rem 0.1rem;
+    font-size: 0.7rem;
+  }
+  .live-bar,
+  .decision-bar {
+    bottom: calc(var(--nav-h) + 0.5rem);
+  }
+}
+
+/* Tablets and up: top tabs with icons inline */
+@media (min-width: 760px) {
+  .tabs a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+  .tab-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Desktop: wide shell, two-column screens */
+@media (min-width: 960px) {
+  .shell-app {
+    max-width: 72rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  .shell-app .tabs {
+    max-width: 34rem;
+  }
+  .layout-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: start;
+  }
+  .col-main {
+    position: sticky;
+    top: 5rem;
+  }
+  .page-narrow {
+    max-width: 40rem;
+  }
+  .h1 {
+    font-size: 2.2rem;
+  }
+}
+
+.col-side > :first-child,
+.col-main > :first-child {
+  margin-top: 0;
+}
+
+/* Sticky decision bar on order results */
+.decision-bar {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+
+.decision-bar .btn {
+  min-height: 44px;
+  padding: 0 1rem;
+}
+
+.decision-summary {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* Working state for buttons */
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+.btn[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.decision-summary {
+  justify-items: start;
+}
+
+@media (min-width: 960px) {
+  .decision-bar {
+    margin-left: auto;
+    width: min(100%, calc((100% - 1.75rem) * 0.472));
+  }
+}
+
+/* Phones: keep the decision bar above the bottom navigation (must come after the base rule). */
+@media (max-width: 759px) {
+  .decision-bar {
+    bottom: calc(var(--nav-h) + 0.5rem);
+  }
+}
+
+@media (max-width: 759px) {
+  .decision-bar {
+    grid-template-columns: 1fr 1fr;
+    padding: 0.6rem;
+  }
+  .decision-summary {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.25rem;
+  }
+  .decision-bar form,
+  .decision-bar .btn {
+    width: 100%;
+  }
+}

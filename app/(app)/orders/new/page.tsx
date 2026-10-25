@@ -10,7 +10,7 @@ export default async function NewOrderPage() {
   const { business } = await requireBusiness();
   const ctx = await createRepo(prisma).loadContext(business, todayInJohannesburg());
   return (
-    <main>
+    <main className="page-narrow">
       <h1 className="h1">Check a new order</h1>
       <p className="muted" style={{ marginTop: 0 }}>
         Enter the order as the customer described it. Chrono updates the forecast as you type.
