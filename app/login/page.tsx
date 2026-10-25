@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { demoLogin, login } from "@/app/actions/auth";
 import { CashChart } from "@/components/CashChart";
-import { AutoTourButton } from "@/components/AutoTour";
 import type { DayPoint } from "@/lib/engine";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -42,9 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           Opens Lerato&apos;s Kitchen, a catering business in Soshanguve, with four months of real-looking history.
         </p>
       </form>
-      <div style={{ margin: "0 0 1.75rem" }}>
-        <AutoTourButton className="btn btn-quiet btn-wide" />
-      </div>
+      <div style={{ margin: "0 0 1.75rem" }} />
 
       <section className="panel">
         <h2 className="h2" style={{ marginTop: 0 }}>

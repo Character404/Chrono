@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             Settings
           </Link>
         <form action={logout}>
-          <SubmitButton className="linkish" pendingLabel="Logging out…">Log out</SubmitButton>
+          <SubmitButton className="linkish" pendingLabel="Logging out">Log out</SubmitButton>
         </form>
         </div>
       </header>

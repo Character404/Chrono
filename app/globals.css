@@ -2114,3 +2114,62 @@ details.more[open] > summary::before {
     transition: none;
   }
 }
+
+/* ---------- Tour spotlight: blur everything except the section being shown ---------- */
+.tour-shade {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  background: rgba(8, 22, 26, 0.38);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 250ms var(--ease);
+  will-change: transform, width, height;
+}
+
+.tour-shade[data-on="true"] {
+  opacity: 1;
+}
+
+/* The caption is see-through glass, floating over the blurred area. */
+.autotour {
+  background: rgba(10, 29, 33, 0.58);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.autotour-caption {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Tours at the top of Home ---------- */
+.tour-top {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.tour-top .autotour-start {
+  margin: 0;
+}
+
+.tour-top .tour {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+@media (min-width: 960px) {
+  .tour-top {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+}
