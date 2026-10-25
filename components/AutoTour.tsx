@@ -29,20 +29,20 @@ declare global {
 }
 
 const START_EVENT = "chrono-tour-start";
-const PAUSE_MS = 120;
+const PAUSE_MS = 60;
 
 /**
  * The narration: BinaryBros' own recorded clips in public/tour-audio, played as recorded
  * (never sped up or cut). Lengths in seconds, used only if a clip can't play.
  */
-const CLIP_SECONDS = [7.63, 1.65, 4.21, 4.99, 11.15, 4.83, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
+const CLIP_SECONDS = [7.63, 1.65, 4.21, 4.99, 11.15, 5.96, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
 const CLIP_LABELS = [
   "Welcome to Chrono",
   "Registering a business",
   "Lerato's catering business in Soshanguve",
   "Her dashboard",
   "Thabo's wedding order",
-  "The forecast: a projected shortfall",
+  "The forecast: a potential cash shortfall",
   "Why: costs, Thabo's payments and upcoming expenses",
   "Applying the recommended deposit",
   "Red to green",
