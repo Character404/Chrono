@@ -1490,3 +1490,22 @@ details.more[open] > summary::before {
   margin-top: 2rem;
   border-color: color-mix(in srgb, var(--short) 35%, var(--line));
 }
+
+/* Customer list: badge sits under the name, count on the right. */
+.customer-row {
+  justify-content: flex-start;
+  gap: 0.85rem;
+}
+
+.customer-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.row .customer-main .badge {
+  white-space: nowrap;
+  text-align: left;
+}
