@@ -52,7 +52,7 @@ describe("Cash story", () => {
   it("gives a calm headline when the order is safe", () => {
     const safe = makeInput({ openingRands: 5000 });
     const s = buildCashStory(safe, analyzeOrder(safe));
-    expect(s.headline).toMatch(/^You can afford this order/);
+    expect(s.headline).toMatch(/^Affordable order\. Lowest balance: R/);
     expect(s.squeeze).toHaveLength(0);
   });
 });

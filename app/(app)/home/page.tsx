@@ -41,11 +41,8 @@ export default async function HomePage() {
   return (
     <main className="layout-2">
       {showTour && (
-        <div className="tour-top">
+        <div className="demo-entry demo-entry-top">
           <AutoTourButton />
-          <Link href={`/orders/${demoWedding?.id}?tour=1`} className="btn btn-outline btn-wide">
-            Manual demo
-          </Link>
         </div>
       )}
       <div className="col-main">
@@ -77,6 +74,26 @@ export default async function HomePage() {
           <strong className="num">{formatRand(outlook.minBalanceCents)}</strong> on {formatShortDate(outlook.minBalanceDate)}.
         </p>
       </section>
+
+      <h2 className="h2">Orders waiting for your decision</h2>
+      {pending.length === 0 ? (
+        <p className="muted">No orders waiting. When a customer asks for something, check it here before you say yes.</p>
+      ) : (
+        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+          {pending.map(({ order, verdict }) => (
+            <Link key={order.id} href={`/orders/${order.id}`} className="row" data-tour={demoWedding && order.id === demoWedding.id ? "wedding" : undefined}>
+              <span>
+                <strong>{order.title}</strong>
+                <br />
+                <span className="small muted">
+                  {customerName(order.customerId)}, <span className="num">{formatRand(order.valueCents)}</span>
+                </span>
+              </span>
+              {verdict && <VerdictBadge verdict={verdict} />}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <h2 className="h2">Coming up</h2>
       {upcoming.length === 0 ? (
@@ -139,29 +156,6 @@ export default async function HomePage() {
         </p>
       )}
 
-      <Link href="/orders/new" className="btn btn-wide" style={{ margin: "0.5rem 0 1.5rem" }}>
-        Check a new order
-      </Link>
-
-      <h2 className="h2">Orders waiting for your decision</h2>
-      {pending.length === 0 ? (
-        <p className="muted">No orders waiting. When a customer asks for something, check it here before you say yes.</p>
-      ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
-          {pending.map(({ order, verdict }) => (
-            <Link key={order.id} href={`/orders/${order.id}`} className="row" data-tour={demoWedding && order.id === demoWedding.id ? "wedding" : undefined}>
-              <span>
-                <strong>{order.title}</strong>
-                <br />
-                <span className="small muted">
-                  {customerName(order.customerId)}, <span className="num">{formatRand(order.valueCents)}</span>
-                </span>
-              </span>
-              {verdict && <VerdictBadge verdict={verdict} />}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {accepted.length > 0 && (
         <>

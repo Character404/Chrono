@@ -33,12 +33,12 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
         <div className="field">
           <label htmlFor="cash">Cash the business has today (R)</label>
           <input className="input num" id="cash" name="cash" inputMode="decimal" required placeholder="4500" />
-          <span className="hint">Money in your account and cash on hand that you can use for the business.</span>
+          <span className="hint">In the bank and on hand.</span>
         </div>
         <div className="field">
           <label htmlFor="buffer">Safety buffer (R)</label>
           <input className="input num" id="buffer" name="buffer" inputMode="decimal" defaultValue="500" />
-          <span className="hint">The least you want to keep in the business at all times. Chrono warns you when an order takes you below it.</span>
+          <span className="hint">The least you want to keep in the business.</span>
         </div>
         <SubmitButton className="btn btn-wide" pendingLabel="Saving…">Save and continue</SubmitButton>
       </form>

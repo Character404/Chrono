@@ -12,9 +12,6 @@ export default async function NewOrderPage() {
   return (
     <main className="page-narrow">
       <h1 className="h1">Check a new order</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Enter the order as the customer described it. Chrono updates the forecast as you type.
-      </p>
       <OrderWizard ctx={ctx} />
     </main>
   );

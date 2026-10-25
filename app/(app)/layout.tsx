@@ -25,11 +25,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
       <NavTabs />
-      {user.isDemo && (
-        <p className="demo-flag">
-          Your private demo of {business.name}. Made-up data, deleted after 24 hours.
-        </p>
-      )}
       {children}
     </div>
   );

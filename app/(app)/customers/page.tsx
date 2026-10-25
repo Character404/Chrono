@@ -17,9 +17,6 @@ export default async function CustomersPage() {
   return (
     <main className="page-narrow">
       <h1 className="h1">Customers</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        How each customer really pays, learned from the payments you record. Chrono uses this in every forecast.
-      </p>
       {customers.length > 0 && (
         <div className="stat-row">
           <div className="stat">

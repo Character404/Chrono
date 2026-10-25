@@ -248,38 +248,46 @@ export function TourHost() {
   useEffect(() => {
     if (!active) return;
     let frame = 0;
+    // Current (drawn) positions glide towards their targets every frame, so the caption and
+    // the spotlight move smoothly and stay in step with the page as it scrolls.
+    const pos = { top: NaN, left: NaN };
+    const spot = { x0: NaN, y0: NaN, x1: NaN, y1: NaN };
+    const glide = (current: number, target: number, k: number) => (Number.isNaN(current) || Math.abs(target - current) < 0.5 ? target : current + (target - current) * k);
     const tick = () => {
       const panel = panelRef.current;
       const el = targetRef.current;
       if (panel) {
+        const k = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 0.14;
         const margin = 12;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const nav = document.querySelector(".tabs");
         const navRect = nav?.getBoundingClientRect();
         const bottomLimit = navRect && navRect.top > vh / 2 ? navRect.top - margin : vh - margin;
-        if (el && el.isConnected && !endCardRef.current) {
+        const ph = panel.offsetHeight;
+        const pw = panel.offsetWidth;
+        const showing = !!el && el.isConnected && !endCardRef.current;
+
+        // Where the caption should be: beside the highlighted section, or bottom-centre when nothing is highlighted.
+        let targetTop = bottomLimit - ph;
+        let targetLeft = (vw - pw) / 2;
+        if (showing) {
           const r = el.getBoundingClientRect();
-          const ph = panel.offsetHeight;
-          const pw = panel.offsetWidth;
-          let top = r.bottom + margin;
-          if (top + ph > bottomLimit) top = r.top - ph - margin;
-          if (top < margin) top = Math.min(bottomLimit - ph, Math.max(margin, r.bottom - ph - margin));
-          const left = Math.min(Math.max(r.left, margin), Math.max(margin, vw - pw - margin));
-          panel.dataset.floating = "true";
-          panel.style.top = `${Math.round(top)}px`;
-          panel.style.left = `${Math.round(left)}px`;
-          // Spotlight: frost everything except a clear window around the highlighted section.
+          targetTop = r.bottom + margin;
+          if (targetTop + ph > bottomLimit) targetTop = r.top - ph - margin;
+          if (targetTop < margin) targetTop = Math.min(bottomLimit - ph, Math.max(margin, r.bottom - ph - margin));
+          targetLeft = Math.min(Math.max(r.left, margin), Math.max(margin, vw - pw - margin));
+
           const pad = 8;
-          const x0 = Math.max(0, r.left - pad);
-          const y0 = Math.max(0, r.top - pad);
-          const x1 = Math.min(vw, r.right + pad);
-          const y1 = Math.min(vh, r.bottom + pad);
+          spot.x0 = glide(spot.x0, Math.max(0, r.left - pad), k);
+          spot.y0 = glide(spot.y0, Math.max(0, r.top - pad), k);
+          spot.x1 = glide(spot.x1, Math.min(vw, r.right + pad), k);
+          spot.y1 = glide(spot.y1, Math.min(vh, r.bottom + pad), k);
           const boxes = [
-            [0, 0, vw, y0],
-            [0, y1, vw, Math.max(0, vh - y1)],
-            [0, y0, x0, Math.max(0, y1 - y0)],
-            [x1, y0, Math.max(0, vw - x1), Math.max(0, y1 - y0)],
+            [0, 0, vw, spot.y0],
+            [0, spot.y1, vw, Math.max(0, vh - spot.y1)],
+            [0, spot.y0, spot.x0, Math.max(0, spot.y1 - spot.y0)],
+            [spot.x1, spot.y0, Math.max(0, vw - spot.x1), Math.max(0, spot.y1 - spot.y0)],
           ];
           shadeRefs.current.forEach((shade, i) => {
             if (!shade) return;
@@ -290,15 +298,16 @@ export function TourHost() {
             shade.dataset.on = "true";
           });
         } else {
-          if (panel.dataset.floating !== "false") {
-            panel.dataset.floating = "false";
-            panel.style.top = "";
-            panel.style.left = "";
-          }
           shadeRefs.current.forEach((shade) => {
             if (shade) shade.dataset.on = "false";
           });
         }
+
+        pos.top = glide(pos.top, targetTop, k);
+        pos.left = glide(pos.left, targetLeft, k);
+        panel.dataset.floating = "true";
+        panel.style.top = `${pos.top.toFixed(1)}px`;
+        panel.style.left = `${pos.left.toFixed(1)}px`;
       }
       frame = requestAnimationFrame(tick);
     };
@@ -369,7 +378,7 @@ export function TourScene({ name, steps }: { name: string; steps: TourScriptStep
 }
 
 /** Starts the tour. The tap also unlocks audio playback (needed on phones). */
-export function AutoTourButton({ className = "btn btn-wide autotour-start", label = "▶ Auto demo" }: { className?: string; label?: string }) {
+export function AutoTourButton({ className = "btn btn-wide autotour-start", label = "▶ Watch a 90-second tour" }: { className?: string; label?: string }) {
   const start = () => {
     try {
       const audio = tourAudio();

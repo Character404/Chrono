@@ -2207,3 +2207,37 @@ details.more[open] > summary::before {
     max-width: 42rem;
   }
 }
+
+/* ---------- Simple figures on the monthly summary ---------- */
+.summary-figures {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.95rem;
+}
+
+.summary-figures span {
+  opacity: 0.8;
+}
+
+/* ---------- One tour button ---------- */
+.demo-entry {
+  margin: 0 0 0.6rem;
+}
+
+.demo-entry .btn {
+  width: 100%;
+  margin: 0;
+}
+
+.demo-entry-top {
+  grid-column: 1 / -1;
+  margin-bottom: 1rem;
+}
+
+/* The tour caption is positioned every frame (it glides), so it needs no CSS transition. */
+.autotour[data-floating="true"] {
+  transition: none;
+}

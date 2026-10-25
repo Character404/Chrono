@@ -16,9 +16,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <main className="page-narrow">
       <h1 className="h1">Business settings</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        These numbers shape every forecast Chrono makes.
-      </p>
       {saved && (
         <p className="success-box" role="status">
           Saved. Your forecasts now use the new settings.
@@ -29,7 +26,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           {error}
         </p>
       )}
-      {user.isDemo && <p className="demo-flag">This is your private copy of the demo. Change anything you like: it&apos;s deleted after 24 hours.</p>}
 
       <form action={updateBusiness} className="panel">
         <div className="field">
@@ -47,7 +43,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <input className="input num" id="buffer" name="buffer" inputMode="decimal" required defaultValue={String(business.safetyBufferCents / 100)} />
           </div>
           <p className="hint" style={{ margin: 0 }}>
-            The least you want in the business at all times. Orders that take you below it are marked <strong>Tight</strong>. Use 0 if you don&apos;t want a buffer.
+            The least you want to keep in the business.
           </p>
         </div>
 
@@ -57,7 +53,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <input className="input num" id="cash" name="cash" inputMode="decimal" placeholder={String(Math.round(cashToday / 100))} />
           </div>
           <p className="hint" style={{ margin: 0 }}>
-            Chrono currently thinks you have <strong className="num">{formatRand(cashToday)}</strong>. If that&apos;s not right, enter the real amount and forecasts restart from today. Leave blank to keep it.
+            Currently <strong className="num">{formatRand(cashToday)}</strong>. Leave blank to keep it.
           </p>
         </div>
 

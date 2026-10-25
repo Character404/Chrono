@@ -167,7 +167,7 @@ export function buildCashStory(input: ForecastInput, analysis: OrderAnalysis): C
   } else if (result.verdict === "TIGHT") {
     headline = `You can take this order, but your cash drops to ${formatRand(result.minBalanceCents)} on ${formatShortDate(result.minBalanceDate)}, below your ${formatRand(result.safetyBufferCents)} cushion.`;
   } else {
-    headline = `You can afford this order. Your cash never drops below ${formatRand(result.minBalanceCents)}.`;
+    headline = `Affordable order. Lowest balance: ${formatRand(result.minBalanceCents)}.`;
   }
 
   // --- Key moments: the few rows that explain the verdict --------------------

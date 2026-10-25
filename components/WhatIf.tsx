@@ -87,9 +87,6 @@ export function WhatIf({ ctx, order, recommendedCents, canApply }: { ctx: Busine
           <input type="hidden" name="deposit" value={String(yourDeposit / 100)} />
           <input type="hidden" name="balanceDate" value={balanceDate} />
           <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Saving…">Use your idea as the order&apos;s terms</SubmitButton>
-          <p className="hint" style={{ marginTop: "0.4rem" }}>
-            Do this once the customer agrees. You can share the new terms as a quote below.
-          </p>
         </form>
       )}
     </section>
