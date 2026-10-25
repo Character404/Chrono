@@ -40,6 +40,15 @@ export default async function HomePage() {
 
   return (
     <main className="layout-2">
+      {showTour && (
+        <div className="tour-top">
+          <AutoTourButton />
+          <Link href={`/orders/${demoWedding?.id}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
+            <span className="tour-step">60s</span>
+            <strong>Prefer to click through? Take the guided tour.</strong>
+          </Link>
+        </div>
+      )}
       <div className="col-main">
       <section className="hero-card" data-tour="home-hero">
         <div className="hero-top">
@@ -120,17 +129,6 @@ export default async function HomePage() {
             ))}
           </ol>
         </section>
-      )}
-      {showTour && <AutoTourButton />}
-      {showTour && (
-        <Link href={`/orders/${demoWedding?.id}?tour=1`} className="tour" style={{ textDecoration: "none" }}>
-          <span className="tour-step">60s</span>
-          <span>
-            <strong>Prefer to click through yourself? Take the guided tour.</strong>
-            <br />
-            See how Chrono spots a cash shortfall that Lerato couldn&apos;t see.
-          </span>
-        </Link>
       )}
 
       {impact.shortfallsSpotted > 0 && (

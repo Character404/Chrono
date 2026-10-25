@@ -130,6 +130,7 @@ export function TourHost() {
   const cancelledRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<Element | null>(null);
+  const shadeRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (window.__chronoTourAudio) window.__chronoTourAudio.muted = muted;
@@ -268,10 +269,35 @@ export function TourHost() {
           panel.dataset.floating = "true";
           panel.style.top = `${Math.round(top)}px`;
           panel.style.left = `${Math.round(left)}px`;
-        } else if (panel.dataset.floating !== "false") {
-          panel.dataset.floating = "false";
-          panel.style.top = "";
-          panel.style.left = "";
+          // Spotlight: frost everything except a clear window around the highlighted section.
+          const pad = 8;
+          const x0 = Math.max(0, r.left - pad);
+          const y0 = Math.max(0, r.top - pad);
+          const x1 = Math.min(vw, r.right + pad);
+          const y1 = Math.min(vh, r.bottom + pad);
+          const boxes = [
+            [0, 0, vw, y0],
+            [0, y1, vw, Math.max(0, vh - y1)],
+            [0, y0, x0, Math.max(0, y1 - y0)],
+            [x1, y0, Math.max(0, vw - x1), Math.max(0, y1 - y0)],
+          ];
+          shadeRefs.current.forEach((shade, i) => {
+            if (!shade) return;
+            const [x, y, w, h] = boxes[i];
+            shade.style.transform = `translate(${x}px, ${y}px)`;
+            shade.style.width = `${w}px`;
+            shade.style.height = `${h}px`;
+            shade.dataset.on = "true";
+          });
+        } else {
+          if (panel.dataset.floating !== "false") {
+            panel.dataset.floating = "false";
+            panel.style.top = "";
+            panel.style.left = "";
+          }
+          shadeRefs.current.forEach((shade) => {
+            if (shade) shade.dataset.on = "false";
+          });
         }
       }
       frame = requestAnimationFrame(tick);
@@ -301,6 +327,17 @@ export function TourHost() {
           <p className="tour-endcard-by">BinaryBros</p>
         </div>
       )}
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="tour-shade"
+          data-on="false"
+          aria-hidden="true"
+          ref={(el) => {
+            shadeRefs.current[i] = el;
+          }}
+        />
+      ))}
       <div className="autotour" role="region" aria-label="Narrated tour" ref={panelRef} data-floating="false">
         <div className="autotour-progress" aria-hidden="true">
           <span style={{ width: `${finished ? 100 : (clip / CLIP_SECONDS.length) * 100}%` }} />
