@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { TourHost } from "@/components/AutoTour";
 
 const sans = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
 
@@ -18,7 +19,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-ZA">
-      <body className={sans.variable}>{children}</body>
+      <body className={sans.variable}>
+        {children}
+        <TourHost />
+      </body>
     </html>
   );
 }

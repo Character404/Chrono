@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireBusiness } from "@/lib/auth/guards";
 import { createRepo, forecastInputFor } from "@/lib/data/repo";
 import { orderRowToInput } from "@/lib/data/convert";
-import { analyzeOrder, buildCashStory, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis, type CashStory } from "@/lib/engine";
+import { analyzeOrder, buildCashStory, spokenDate, EngineValidationError, formatRand, formatShortDate, todayInJohannesburg, VERDICT_LABEL, type OrderAnalysis, type CashStory } from "@/lib/engine";
 import { decideOrder } from "@/app/actions/orders";
 import { CashChart } from "@/components/CashChart";
 import { VerdictBadge, VerdictBand } from "@/components/Verdict";
@@ -16,6 +16,8 @@ import { TourStep } from "@/components/Tour";
 import { Thinking } from "@/components/Thinking";
 import { CashTimeline, KeyMoments, OrderSummary, SqueezeCard } from "@/components/CashStory";
 import { Fold } from "@/components/Fold";
+import { DocumentShare } from "@/components/DocumentShare";
+import { TourScene, type TourScriptStep } from "@/components/AutoTour";
 import { applyTerms, shareQuote, stopSharingQuote } from "@/app/actions/records";
 import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { headers } from "next/headers";
@@ -98,13 +100,29 @@ export default async function OrderPage({
         : "Confirmed your deposit is enough",
   ];
 
+  // The order part of the narrated tour, built from this order's real numbers.
+  const isTourOrder = isDemoRecord(order.id, DEMO_IDS.wedding) && order.status === "DRAFT";
+  let tourScript: TourScriptStep[] = [];
+  if (isTourOrder && primary.shortfall && analysis.deposit.recommendedCents !== null) {
+    const words = ["no", "one", "two", "three", "four", "five", "six"];
+    const causes = words[story.squeeze.length] ?? String(story.squeeze.length);
+    tourScript = [
+      { target: "verdict", say: `No. Chrono plays her cash forward and finds she'd run out of money on ${spokenDate(primary.shortfall.firstDate)}.` },
+      { target: "why", say: `Ingredients and rent go out first, and ${firstName} pays about a week late, as his history shows.` },
+      { target: "squeeze", open: "squeeze", say: `${causes[0].toUpperCase() + causes.slice(1)} pressures collide, the same ones that sink small businesses.` },
+      { target: "fix", say: `Chrono's fix: ask for ${Math.round(analysis.deposit.recommendedCents / 100)} rand upfront. One tap.` },
+    ];
+  }
+
   return (
     <main>
       <Link href="/home" className="small muted">
         Back to home
       </Link>
       <h1 className="h1">{order.title}</h1>
-      <OrderSummary story={story} />
+      <div data-tour="summary">
+        <OrderSummary story={story} />
+      </div>
 
       {statusNote && <p className="demo-flag">{statusNote}</p>}
       {error && (
@@ -122,13 +140,14 @@ export default async function OrderPage({
               </TourStep>
             )}
 
+            <div data-tour="verdict">
             <VerdictBand
               verdict={primary.verdict}
               headline={story.headline}
               note={changedByPredictions ? `As planned it looks ${VERDICT_LABEL[asEntered.verdict].toLowerCase()}. With how things really go for your business:` : undefined}
             >
               {order.status === "DRAFT" && analysis.deposit.status === "INCREASE" && analysis.deposit.recommendedCents !== null && (
-                <div className="verdict-fix">
+                <div className="verdict-fix" data-tour="fix">
                   <p style={{ margin: 0 }}>
                     <strong>Fix: ask for {formatRand(analysis.deposit.recommendedCents)} upfront</strong>
                     <br />
@@ -152,6 +171,7 @@ export default async function OrderPage({
                 </p>
               )}
             </VerdictBand>
+            </div>
 
             {tour && (
               <TourStep step={2} total={5}>
@@ -159,7 +179,9 @@ export default async function OrderPage({
               </TourStep>
             )}
 
-            <KeyMoments story={story} />
+            <div data-tour="why">
+              <KeyMoments story={story} />
+            </div>
           </div>
 
           <div className="col-side">
@@ -173,7 +195,7 @@ export default async function OrderPage({
 
             <div className="folds">
               {story.squeeze.length > 0 && (
-                <Fold title="What's squeezing your cash" count={story.squeeze.length}>
+                <Fold title="What's squeezing your cash" count={story.squeeze.length} tour="squeeze">
                   <SqueezeCard story={story} />
                 </Fold>
               )}
@@ -186,39 +208,40 @@ export default async function OrderPage({
               </Fold>
 
               {order.status === "DRAFT" && (
-                <Fold title="Try a different deposit or date" id="what-if">
+                <Fold title="Try a different deposit or date" id="what-if" tour="whatif">
                   <WhatIf ctx={ctx} order={order} recommendedCents={analysis.deposit.status === "INCREASE" ? analysis.deposit.recommendedCents : null} canApply />
                 </Fold>
               )}
 
               {(order.status === "DRAFT" || order.status === "ACCEPTED") && (
-                <Fold title="Send the customer a quote" id="quote" open={!!quote}>
-                  {quoteUrl && quote ? (
-                    <>
-                      <p className="small muted" style={{ marginTop: 0 }}>
-                        Anyone with this link can see the order name, total, deposit and payment dates. Nothing else.
-                      </p>
-                      <p className="quote-link num">{quoteUrl}</p>
-                      <div className="grid-2">
-                        <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(`Here is your quote from ${business.name}: ${quoteUrl}`)}`} target="_blank" rel="noopener noreferrer">
-                          Share on WhatsApp
-                        </a>
-                        <form action={stopSharingQuote}>
-                          <input type="hidden" name="orderId" value={order.id} />
-                          <input type="hidden" name="quoteId" value={quote.id} />
-                          <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Stopping…">Stop sharing</SubmitButton>
-                        </form>
-                      </div>
-                    </>
-                  ) : (
-                    <form action={shareQuote}>
-                      <input type="hidden" name="orderId" value={order.id} />
-                      <p className="small muted" style={{ marginTop: 0 }}>
-                        Create a link showing the total, the deposit you need and when payments are due.
-                      </p>
-                      <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Creating link…">Create quote link</SubmitButton>
-                    </form>
-                  )}
+                <Fold title={order.status === "DRAFT" ? "Send the customer a quote" : "Send a quote or invoice"} id="quote" tour="share">
+                  <p className="small muted" style={{ marginTop: 0 }}>
+                    A one-page PDF with the total, the deposit and when payments are due. On a phone, choose WhatsApp from the share menu.
+                  </p>
+                  <DocumentShare orderId={order.id} kinds={order.status === "DRAFT" ? ["quote"] : ["quote", "invoice"]} businessName={business.name} />
+                  <details className="more">
+                    <summary>Prefer a link instead?</summary>
+                    {quoteUrl && quote ? (
+                      <>
+                        <p className="quote-link num">{quoteUrl}</p>
+                        <div className="grid-2">
+                          <a className="btn btn-quiet" href={`https://wa.me/?text=${encodeURIComponent(`Here is your quote from ${business.name}: ${quoteUrl}`)}`} target="_blank" rel="noopener noreferrer">
+                            Send link on WhatsApp
+                          </a>
+                          <form action={stopSharingQuote}>
+                            <input type="hidden" name="orderId" value={order.id} />
+                            <input type="hidden" name="quoteId" value={quote.id} />
+                            <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Stopping…">Stop sharing</SubmitButton>
+                          </form>
+                        </div>
+                      </>
+                    ) : (
+                      <form action={shareQuote} style={{ marginTop: "0.6rem" }}>
+                        <input type="hidden" name="orderId" value={order.id} />
+                        <SubmitButton className="btn btn-quiet btn-wide" pendingLabel="Creating link…">Create quote link</SubmitButton>
+                      </form>
+                    )}
+                  </details>
                 </Fold>
               )}
 
@@ -244,7 +267,7 @@ export default async function OrderPage({
       </Thinking>
 
       {order.status === "DRAFT" && (
-        <div className="decision-bar">
+        <div className="decision-bar" data-tour="decision">
           <div className="decision-summary">
             <VerdictBadge verdict={primary.verdict} />
             <span className="small muted num">
@@ -272,6 +295,7 @@ export default async function OrderPage({
           Chrono never decides for you. Accepting adds this order to your forecasts.
         </p>
       )}
+      {tourScript.length > 0 && <TourScene name="order" steps={tourScript} />}
     </main>
   );
 }

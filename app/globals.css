@@ -1626,3 +1626,155 @@ details.more[open] > summary::before {
     display: none;
   }
 }
+
+/* ---------- Narrated 90-second tour ---------- */
+.autotour-start {
+  margin: 0 0 0.6rem;
+}
+
+.autotour {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(var(--nav-h) + 4.75rem);
+  z-index: 60;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0.9rem 1rem 0.8rem;
+  border-radius: 18px;
+  color: #eef6f5;
+  background: rgba(10, 29, 33, 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 760px) {
+  .autotour {
+    bottom: 6.5rem;
+  }
+}
+
+.autotour-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  margin-bottom: 0.65rem;
+}
+
+.autotour-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--g-sky), var(--g-up));
+  transition: width 400ms var(--ease);
+}
+
+.autotour-caption {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.45;
+  min-height: 2.9em;
+}
+
+.autotour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.autotour-btn {
+  min-height: 36px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: #eef6f5;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.autotour-stop {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-color: transparent;
+}
+
+.tour-focus {
+  position: relative;
+  border-radius: var(--radius-lg);
+  outline: 3px solid var(--brand);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--brand) 18%, transparent);
+  transition: outline-color 300ms, box-shadow 300ms;
+}
+
+/* ---------- Registration process (sign-up page) ---------- */
+.reg-steps {
+  list-style: none;
+  margin: 0.8rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+  counter-reset: reg;
+}
+
+.reg-steps > li {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  padding-left: 2.4rem;
+}
+
+.reg-steps > li::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: var(--surface-2);
+  border: 2px solid var(--line);
+}
+
+.reg-steps > li[data-step="1"]::before {
+  background: var(--g-up);
+  border-color: var(--g-up);
+  color: #fff;
+}
+
+.reg-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line);
+}
+
+.reg-field {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.reg-field > span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.reg-field > b {
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
