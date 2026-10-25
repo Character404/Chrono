@@ -27,7 +27,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <NavTabs />
       {user.isDemo && (
         <p className="demo-flag">
-          <span className="live-dot" aria-hidden="true" />
           Demo: {business.name}. Made-up data that refreshes each day.
         </p>
       )}

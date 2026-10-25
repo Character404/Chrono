@@ -271,7 +271,8 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
             Next
           </button>
         ) : (
-          <button type="submit" className="btn" disabled={pending}>
+          <button type="submit" className="btn" disabled={pending} aria-busy={pending}>
+            {pending && <span className="spinner" aria-hidden="true" />}
             {pending ? "Saving…" : "Save and see the result"}
           </button>
         )}
@@ -281,10 +282,6 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
         {analysis ? (
           <div className="live-row">
             <div>
-              <span className="live-label">
-                <span className="live-dot" aria-hidden="true" />
-                Live forecast
-              </span>
               <div key={analysis.primary.verdict} className="pop">
                 <VerdictBadge verdict={analysis.primary.verdict} />
               </div>
@@ -295,12 +292,7 @@ export function OrderWizard({ ctx }: { ctx: BusinessContext }) {
             <CashChart key={`${analysis.primary.minBalanceCents}-${analysis.primary.series.length}`} id="live" series={analysis.primary.series} bufferCents={ctx.business.safetyBufferCents} compact />
           </div>
         ) : (
-          <span className="small muted">
-            <span className="live-label" style={{ display: "inline-flex", marginRight: "0.4rem" }}>
-              Live forecast
-            </span>
-            Enter the total and deposit and Chrono starts forecasting as you type.
-          </span>
+          <span className="small muted">Enter the total and deposit to see whether you can afford this order.</span>
         )}
       </div>
     </form>

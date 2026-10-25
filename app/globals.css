@@ -1305,12 +1305,12 @@ a.row:hover {
   line-height: 1.3;
 }
 
-   /* Amounts never split across lines, e.g. "R1 100". */
-   .row .num {
-     white-space: nowrap;
-   }
+/* Amounts never split across lines, e.g. "R1 100". */
+.row .num {
+  white-space: nowrap;
+}
 
-   .row > strong,
-   .row > span:last-child:not(.badge) {
-     flex: none;
-   }
+.row > strong,
+.row > span:last-child:not(.badge) {
+  flex: none;
+}
