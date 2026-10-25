@@ -43,3 +43,8 @@ export function parseRandInput(text: string): Cents | null {
   if (cleaned === "" || !/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   return Math.round(Number(cleaned) * 100);
 }
+
+/** Keeps amounts like "R5 000" on one line inside running text (display only). */
+export function keepAmountsTogether(text: string): string {
+  return text.replace(/(R\d{1,3})((?: \d{3})+)/g, (_m, head: string, rest: string) => head + rest.replace(/ /g, "\u00a0"));
+}

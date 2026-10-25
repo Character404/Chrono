@@ -1,4 +1,4 @@
-import { formatRand, type OrderAnalysis } from "@/lib/engine";
+import { formatRand, keepAmountsTogether, type OrderAnalysis } from "@/lib/engine";
 
 const CONFIDENCE_LABEL = { LOW: "Low confidence", MEDIUM: "Medium confidence", HIGH: "High confidence" } as const;
 
@@ -8,13 +8,13 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
   const predictionReasons = new Set(predictions.map((p) => p.reason));
   const fixLine = explanation.lines.find((l) => l.startsWith("Ask for a deposit"));
   // The verdict band already says when predictions changed the verdict.
-  const lines = explanation.lines.filter((l) => l !== fixLine && !predictionReasons.has(l) && !l.startsWith("As you entered it"));
+  const lines = explanation.lines.filter((l) => l !== fixLine && !predictionReasons.has(l) && !l.startsWith("As you entered it") && !l.includes(" is due before "));
 
   return (
     <>
       {fixLine && deposit.status === "INCREASE" && (
         <p className="fix">
-          {fixLine}
+          {keepAmountsTogether(fixLine)}
           <br />
           <span className="small muted" style={{ fontWeight: 400 }}>
             That&apos;s {formatRand((deposit.recommendedCents ?? 0) - deposit.currentDepositCents)} more upfront than you planned.
@@ -22,6 +22,8 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
         </p>
       )}
 
+      <details className="more">
+        <summary>See how Chrono worked this out</summary>
       <ul className="list-plain" style={{ marginTop: "1rem" }}>
         {lines.map((line) => (
           <li key={line}>{line}</li>
@@ -56,6 +58,7 @@ export function AnalysisDetails({ analysis }: { analysis: OrderAnalysis }) {
         ))}
         <li>{explanation.footnote}</li>
       </ul>
+      </details>
     </>
   );
 }
