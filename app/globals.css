@@ -2499,3 +2499,13 @@ details.more[open] > summary::before {
     margin-top: 1.75rem;
   }
 }
+
+/* Log out (and Logging out) in red. */
+.linkish-danger,
+.linkish-danger:hover {
+  color: var(--short);
+}
+
+.linkish-danger:hover {
+  background: var(--short-bg);
+}
