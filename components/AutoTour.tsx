@@ -130,7 +130,9 @@ export function TourHost() {
   const cancelledRef = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<Element | null>(null);
-  const shadeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const spotRef = useRef<HTMLDivElement | null>(null);
+  // While the pointer presses something, the spotlight moves to it so the press is always in the clear.
+  const pressTargetRef = useRef<HTMLElement | null>(null);
   // A pointer (fingertip on phones, cursor on laptops) that travels to each button and presses it.
   const pointerElRef = useRef<HTMLDivElement | null>(null);
   const pointerRef = useRef({ x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false });
@@ -167,6 +169,7 @@ export function TourHost() {
     const press = async (selector: string) => {
       const el = await waitFor(() => document.querySelector<HTMLElement>(selector), 6000);
       if (!el || cancelledRef.current) return false;
+      pressTargetRef.current = el;
       const ptr = pointerRef.current;
       let r = el.getBoundingClientRect();
       if (r.bottom < 0 || r.top > window.innerHeight) {
@@ -189,6 +192,8 @@ export function TourHost() {
       el.click();
       await sleep(180);
       if (node) node.dataset.pressing = "false";
+      await sleep(350);
+      if (pressTargetRef.current === el) pressTargetRef.current = null;
       return true;
     };
 
@@ -300,6 +305,8 @@ export function TourHost() {
         const ph = panel.offsetHeight;
         const pw = panel.offsetWidth;
         const showing = !!el && el.isConnected && !endCardRef.current;
+        const pressing = pressTargetRef.current;
+        const spotEl = !endCardRef.current && pressing?.isConnected ? pressing : showing ? el : null;
 
         // Where the caption should be: beside the highlighted section, or bottom-centre when nothing is highlighted.
         let targetTop = bottomLimit - ph;
@@ -310,30 +317,27 @@ export function TourHost() {
           if (targetTop + ph > bottomLimit) targetTop = r.top - ph - margin;
           if (targetTop < margin) targetTop = Math.min(bottomLimit - ph, Math.max(margin, r.bottom - ph - margin));
           targetLeft = Math.min(Math.max(r.left, margin), Math.max(margin, vw - pw - margin));
+        }
 
-          const pad = 8;
-          spot.x0 = glide(spot.x0, Math.max(0, r.left - pad), k);
-          spot.y0 = glide(spot.y0, Math.max(0, r.top - pad), k);
-          spot.x1 = glide(spot.x1, Math.min(vw, r.right + pad), k);
-          spot.y1 = glide(spot.y1, Math.min(vh, r.bottom + pad), k);
-          const boxes = [
-            [0, 0, vw, spot.y0],
-            [0, spot.y1, vw, Math.max(0, vh - spot.y1)],
-            [0, spot.y0, spot.x0, Math.max(0, spot.y1 - spot.y0)],
-            [spot.x1, spot.y0, Math.max(0, vw - spot.x1), Math.max(0, spot.y1 - spot.y0)],
-          ];
-          shadeRefs.current.forEach((shade, i) => {
-            if (!shade) return;
-            const [x, y, w, h] = boxes[i];
-            shade.style.transform = `translate(${x}px, ${y}px)`;
-            shade.style.width = `${w}px`;
-            shade.style.height = `${h}px`;
-            shade.dataset.on = "true";
-          });
-        } else {
-          shadeRefs.current.forEach((shade) => {
-            if (shade) shade.dataset.on = "false";
-          });
+        // A soft oval spotlight: clear over the section (or the button being pressed), fading into the blur.
+        const spotNode = spotRef.current;
+        if (spotNode) {
+          if (spotEl) {
+            const r = spotEl.getBoundingClientRect();
+            const pad = 10;
+            // Sized so the whole section sits inside the fully clear part of the oval.
+            const reach = Math.SQRT2 / 0.78;
+            spot.x0 = glide(spot.x0, r.left + r.width / 2, k);
+            spot.y0 = glide(spot.y0, r.top + r.height / 2, k);
+            spot.x1 = glide(spot.x1, (r.width / 2 + pad) * reach, k);
+            spot.y1 = glide(spot.y1, (r.height / 2 + pad) * reach, k);
+            const mask = `radial-gradient(${spot.x1.toFixed(1)}px ${spot.y1.toFixed(1)}px at ${spot.x0.toFixed(1)}px ${spot.y0.toFixed(1)}px, transparent 78%, #000 100%)`;
+            spotNode.style.maskImage = mask;
+            spotNode.style.setProperty("-webkit-mask-image", mask);
+            spotNode.dataset.on = "true";
+          } else {
+            spotNode.dataset.on = "false";
+          }
         }
 
         const ptr = pointerRef.current;
@@ -379,17 +383,7 @@ export function TourHost() {
           <p className="tour-endcard-by">BinaryBros</p>
         </div>
       )}
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="tour-shade"
-          data-on="false"
-          aria-hidden="true"
-          ref={(el) => {
-            shadeRefs.current[i] = el;
-          }}
-        />
-      ))}
+      <div className="tour-spot" aria-hidden="true" ref={spotRef} data-on="false" />
       <div className="tour-pointer" aria-hidden="true" ref={pointerElRef} data-visible="false" data-pressing="false">
         <span className="tp-touch" />
         <svg className="tp-cursor" viewBox="0 0 24 24" width="28" height="28">
