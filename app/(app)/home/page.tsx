@@ -82,6 +82,47 @@ export default async function HomePage() {
         </p>
       </section>
 
+      </div>
+      <div className="col-side">
+      {showChecklist && (
+        <section className="panel checklist">
+          <p className="label" style={{ margin: 0 }}>
+            Get set up
+          </p>
+          <p className="small muted" style={{ margin: "0.15rem 0 0.75rem" }}>
+            {steps.filter((st) => st.done).length} of {steps.length} done. Each step makes your forecasts more accurate.
+          </p>
+          <div className="progress" aria-hidden="true">
+            <span style={{ width: `${(steps.filter((st) => st.done).length / steps.length) * 100}%` }} />
+          </div>
+          <ol className="list-plain" style={{ marginTop: "0.9rem" }}>
+            {steps.map((st) => (
+              <li key={st.key} className="check-item" data-done={st.done} data-next={st === nextStep}>
+                <span className="tick" aria-hidden="true">
+                  {st.done ? "✓" : ""}
+                </span>
+                <span>
+                  {st.done || st.key === "record" ? <strong>{st.title}</strong> : <Link href={st.href}><strong>{st.title}</strong></Link>}
+                  <br />
+                  <span className="small muted">{st.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {impact.shortfallsSpotted > 0 && (
+        <p className="impact">
+          <span className="impact-ring num">{impact.shortfallsSpotted}</span>
+          <span className="small">
+            cash shortfall{impact.shortfallsSpotted === 1 ? "" : "s"} spotted before you said yes, worth{" "}
+            <strong className="num">{formatRand(impact.cashAtRiskCents)}</strong>
+          </span>
+        </p>
+      )}
+
+
       <h2 className="h2">Orders waiting for your decision</h2>
       {pending.length === 0 ? (
         <p className="muted">No orders waiting. When a customer asks for something, check it here before you say yes.</p>
@@ -139,47 +180,6 @@ export default async function HomePage() {
           ))}
         </div>
       )}
-
-      </div>
-      <div className="col-side">
-      {showChecklist && (
-        <section className="panel checklist">
-          <p className="label" style={{ margin: 0 }}>
-            Get set up
-          </p>
-          <p className="small muted" style={{ margin: "0.15rem 0 0.75rem" }}>
-            {steps.filter((st) => st.done).length} of {steps.length} done. Each step makes your forecasts more accurate.
-          </p>
-          <div className="progress" aria-hidden="true">
-            <span style={{ width: `${(steps.filter((st) => st.done).length / steps.length) * 100}%` }} />
-          </div>
-          <ol className="list-plain" style={{ marginTop: "0.9rem" }}>
-            {steps.map((st) => (
-              <li key={st.key} className="check-item" data-done={st.done} data-next={st === nextStep}>
-                <span className="tick" aria-hidden="true">
-                  {st.done ? "✓" : ""}
-                </span>
-                <span>
-                  {st.done || st.key === "record" ? <strong>{st.title}</strong> : <Link href={st.href}><strong>{st.title}</strong></Link>}
-                  <br />
-                  <span className="small muted">{st.detail}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {impact.shortfallsSpotted > 0 && (
-        <p className="impact">
-          <span className="impact-ring num">{impact.shortfallsSpotted}</span>
-          <span className="small">
-            cash shortfall{impact.shortfallsSpotted === 1 ? "" : "s"} spotted before you said yes, worth{" "}
-            <strong className="num">{formatRand(impact.cashAtRiskCents)}</strong>
-          </span>
-        </p>
-      )}
-
 
       </div>
     </main>

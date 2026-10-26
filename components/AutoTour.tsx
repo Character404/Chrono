@@ -35,7 +35,7 @@ const PAUSE_MS = 60;
  * The narration: BinaryBros' own recorded clips in public/tour-audio, played as recorded
  * (never sped up or cut). Lengths in seconds, used only if a clip can't play.
  */
-const CLIP_SECONDS = [7.63, 1.65, 4.21, 4.99, 11.15, 5.96, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
+const CLIP_SECONDS = [6.11, 1.65, 4.21, 4.99, 11.15, 5.96, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
 const CLIP_LABELS = [
   "Welcome to Chrono",
   "Registering a business",
@@ -50,7 +50,7 @@ const CLIP_LABELS = [
   "Customers: how each customer pays",
   "Payments: regular commitments",
   "Monthly summary",
-  "Know before you commit",
+  "Print the monthly summary",
   "Chrono by BinaryBros",
 ];
 
@@ -209,6 +209,7 @@ export function TourHost() {
 
     const run = async () => {
       cancelledRef.current = false;
+      (window as Window & { __chronoTourActive?: boolean }).__chronoTourActive = true;
       setActive(true);
       setFinished(false);
       setEndCard(false);
@@ -262,13 +263,19 @@ export function TourHost() {
       void press('.tabs a[href="/summary"]');
       if (!(await say(13, "summary-hero"))) return;
 
+      // Clip 14: print the monthly summary.
+      void (async () => {
+        await press('[data-tour="print-btn"]');
+        focusNow("print-preview");
+      })();
+      if (!(await say(14))) return;
       focusNow(undefined);
       pointerRef.current.visible = false;
-      if (!(await say(14))) return;
       endCardRef.current = true;
       setEndCard(true);
       if (!(await say(15))) return;
       setFinished(true);
+      (window as Window & { __chronoTourActive?: boolean }).__chronoTourActive = false;
     };
 
     const onStart = () => {
@@ -364,6 +371,7 @@ export function TourHost() {
 
   const stop = () => {
     cancelledRef.current = true;
+    (window as Window & { __chronoTourActive?: boolean }).__chronoTourActive = false;
     window.__chronoTourAudio?.pause();
     document.querySelectorAll(".tour-focus").forEach((el) => el.classList.remove("tour-focus"));
     setEndCard(false);
