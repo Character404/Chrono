@@ -6,6 +6,7 @@ import { computeMonthlySummary, recentMonths } from "@/lib/data/monthly-summary"
 import { monthTitle } from "@/lib/documents/summary-document";
 import { formatRand, todayInJohannesburg } from "@/lib/engine";
 import { PdfShare } from "@/components/PdfShare";
+import { SummaryPaper } from "@/components/SummaryPaper";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +107,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
         <p className="label" style={{ marginTop: 0 }}>
           {monthName}&apos;s summary
         </p>
-        <PdfShare path={`/api/documents/summary?month=${month}`} label="Print" mode="print" shareText={`${business.name}: summary for ${name}`} />
+        <PdfShare path={`/api/documents/summary?month=${month}`} label="Print" mode="print" preview={<SummaryPaper summary={s} businessName={business.name} monthName={name} />} shareText={`${business.name}: summary for ${name}`} />
       </section>
     </main>
   );

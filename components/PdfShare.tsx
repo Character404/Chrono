@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { DOC_LANGS, type DocLang } from "@/lib/documents/i18n";
 
 /** Share any Chrono PDF: phone share menu (pick WhatsApp) or download on a laptop. */
-export function PdfShare({ path, label, shareText, mode = "share" }: { path: string; label: string; shareText: string; mode?: "share" | "print" }) {
+export function PdfShare({ path, label, shareText, mode = "share", preview }: { path: string; label: string; shareText: string; mode?: "share" | "print"; preview?: React.ReactNode }) {
+  const [showing, setShowing] = useState(false);
   const [lang, setLang] = useState<DocLang>("en");
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
@@ -31,6 +32,12 @@ export function PdfShare({ path, label, shareText, mode = "share" }: { path: str
 
   /** Prints the PDF: straight to the print dialog on a computer, or opened full-screen on a phone to print from there. */
   const print = () => {
+    // During the narrated tour, show the printed page on screen instead of opening the real print dialog.
+    if (preview && (window as Window & { __chronoTourActive?: boolean }).__chronoTourActive) {
+      setShowing(true);
+      setTimeout(() => setShowing(false), 4800);
+      return;
+    }
     if (!file) return;
     const href = URL.createObjectURL(file);
     const phone = window.matchMedia("(max-width: 759px)").matches || navigator.maxTouchPoints > 1;
@@ -89,7 +96,7 @@ export function PdfShare({ path, label, shareText, mode = "share" }: { path: str
         ))}
       </div>
       <div className="grid-2">
-        <button type="button" className="btn btn-icon" disabled={!file} onClick={mode === "print" ? print : share}>
+        <button type="button" className="btn btn-icon" disabled={!file} onClick={mode === "print" ? print : share} data-tour={mode === "print" ? "print-btn" : undefined}>
           {mode === "print" && (
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M6.5 9V3.5h11V9" />
@@ -105,6 +112,17 @@ export function PdfShare({ path, label, shareText, mode = "share" }: { path: str
         </a>
       </div>
       {message && <p className="hint">{message}</p>}
+      {showing && preview && (
+        <div className="print-preview" data-tour="print-preview" role="dialog" aria-label="Print preview">
+          {preview}
+          <div className="print-progress" aria-hidden="true">
+            <span />
+          </div>
+          <p className="small" style={{ margin: "0.4rem 0 0", textAlign: "center" }}>
+            Sending to printer
+          </p>
+        </div>
+      )}
     </div>
   );
 }

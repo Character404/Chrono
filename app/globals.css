@@ -2385,3 +2385,64 @@ details.more[open] > summary::before {
     margin-right: auto;
   }
 }
+
+/* Wide screens: use more of the width. */
+@media (min-width: 1280px) {
+  .shell-app {
+    max-width: 84rem;
+  }
+}
+
+/* ---------- Print preview shown during the tour ---------- */
+.print-preview {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 52;
+  width: min(26rem, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  padding: 0.75rem;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55);
+  animation: fadeIn 300ms var(--ease) both;
+}
+
+.print-preview .doc-paper {
+  margin-top: 0;
+}
+
+.print-progress {
+  height: 5px;
+  margin-top: 0.75rem;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.print-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--g-sky), var(--g-up));
+  animation: print-fill 4.2s linear forwards;
+}
+
+@keyframes print-fill {
+  to {
+    width: 100%;
+  }
+}
+
+/* Wide screens: the tour and demo buttons sit side by side instead of stretching across. */
+@media (min-width: 960px) {
+  .demo-entry-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .demo-entry-top > *,
+  .demo-entry-top .btn {
+    margin: 0;
+  }
+}
