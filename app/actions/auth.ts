@@ -37,7 +37,7 @@ export async function login(formData: FormData) {
   }
   await clearLoginFailures(email);
   await createSession(user.id);
-  redirect("/home");
+  redirect(user.role === "CUSTOMER" ? "/shop" : "/home");
 }
 
 export async function signup(formData: FormData) {
@@ -48,9 +48,13 @@ export async function signup(formData: FormData) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) back("/signup", "There's already an account with that email. Log in instead.");
 
-  const user = await prisma.user.create({ data: { email, passwordHash: await hashPassword(password) } });
+  const role = formData.get("role") === "CUSTOMER" ? "CUSTOMER" : "OWNER";
+  const name = String(formData.get("name") ?? "").trim().slice(0, 60);
+  if (role === "CUSTOMER" && name.length < 2) back("/signup", "Tell us your name, so businesses know who's ordering.");
+
+  const user = await prisma.user.create({ data: { email, passwordHash: await hashPassword(password), role, name: name || null } });
   await createSession(user.id);
-  redirect("/setup");
+  redirect(role === "CUSTOMER" ? "/shop" : "/setup");
 }
 
 async function openPrivateDemo(destination: "home" | "manual-tour" = "home"): Promise<never> {
@@ -68,11 +72,6 @@ async function openPrivateDemo(destination: "home" | "manual-tour" = "home"): Pr
 
 export async function demoLogin() {
   await openPrivateDemo();
-}
-
-/** Opens a fresh private demo and goes straight into the click-through tour. */
-export async function manualDemo() {
-  await openPrivateDemo("manual-tour");
 }
 
 export async function logout() {

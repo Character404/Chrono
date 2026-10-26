@@ -40,6 +40,11 @@ export default async function HomePage() {
   const demoWedding = user.isDemo ? drafts.find((o) => isDemoRecord(o.id, DEMO_IDS.wedding)) : undefined;
   const showTour = !!demoWedding;
 
+  // Orders customers placed through Chrono (already checked when they ordered).
+  const viaChrono = new Set(
+    (await prisma.order.findMany({ where: { businessId: business.id, source: "CHRONO" }, select: { id: true } })).map((o) => o.id),
+  );
+
   return (
     <main className="layout-2">
       {showTour && (
@@ -136,6 +141,12 @@ export default async function HomePage() {
                 <span className="small muted">
                   {customerName(order.customerId)}, <span className="num">{formatRand(order.valueCents)}</span>
                 </span>
+                {viaChrono.has(order.id) && (
+                  <>
+                    <br />
+                    <span className="chip-chrono">via Chrono</span>
+                  </>
+                )}
               </span>
               {verdict && <VerdictBadge verdict={verdict} />}
             </Link>

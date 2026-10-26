@@ -13,6 +13,7 @@ export async function requireUser() {
 /** Redirects to login, or to business setup when the user has no business yet. */
 export async function requireBusiness() {
   const user = await requireUser();
+  if (user.role === "CUSTOMER") redirect("/shop");
   const business = await prisma.business.findUnique({ where: { userId: user.id } });
   if (!business) redirect("/setup");
   return { user, business };

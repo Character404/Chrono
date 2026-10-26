@@ -60,6 +60,9 @@ export interface OrderRow {
   payments: PaymentRow[];
   costs: CostRow[];
   customer?: { id: string; name: string } | null;
+  /** "CHRONO" when a customer ordered through Chrono. */
+  source?: string;
+  note?: string | null;
 }
 
 export interface CommitmentRow {
