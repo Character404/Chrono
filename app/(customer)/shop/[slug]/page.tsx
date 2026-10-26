@@ -5,10 +5,11 @@ import { requireUser } from "@/lib/auth/guards";
 import { createRepo } from "@/lib/data/repo";
 import { customerTerms, earliestDate, validateCustomerOrder } from "@/lib/data/customer-orders";
 import { findCustomerRecord, orderableBusiness } from "@/lib/data/marketplace";
-import { getListing } from "@/lib/demo/listings";
-import { addDays, formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
+import { coverFor, getListing } from "@/lib/demo/listings";
+import { formatRand, formatShortDate, todayInJohannesburg } from "@/lib/engine";
 import { placeOrder } from "@/app/actions/customer";
 import { SubmitButton } from "@/components/SubmitButton";
+import { TermsPicker } from "@/components/TermsPicker";
 
 export const dynamic = "force-dynamic";
 
@@ -38,42 +39,50 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
       }
     }
   }
-  const minDate = offering ? earliestDate(offering, today) : addDays(today, 2);
 
   return (
     <main className="page-narrow">
       <Link href="/shop" className="small muted">
         Back to businesses
       </Link>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="listing-hero" src={`/listings/${listing.slug}.svg`} alt={`${listing.name}: ${listing.kind.toLowerCase()} in ${listing.area}`} />
-      <div className="listing-head">
-        <span className="listing-avatar listing-avatar-lg" style={{ background: listing.colour }} aria-hidden="true">
-          {listing.initials}
-        </span>
-        <div>
-          <h1 className="h1" style={{ margin: 0 }}>
-            {listing.name}
-          </h1>
-          <p className="muted" style={{ margin: 0 }}>
+      <section className="biz-hero">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={coverFor(listing)} alt={`${listing.name}: ${listing.kind.toLowerCase()} in ${listing.area}`} />
+        <span className="featured-shade" aria-hidden="true" />
+        <span className="biz-hero-text">
+          <span className={`badge ${listing.orderable ? "badge-SAFE" : ""}`}>{listing.orderable ? "Orders open" : "Sample listing"}</span>
+          <h1 className="biz-hero-name">{listing.name}</h1>
+          <span className="featured-tagline">{listing.tagline}</span>
+          <span className="featured-meta">
             {listing.kind} · {listing.area}
-          </p>
-        </div>
-      </div>
+          </span>
+        </span>
+      </section>
 
       <h2 className="h2">What they offer</h2>
-      <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+      <div className="offer-grid">
         {listing.offerings.map((o) => (
-          <div key={o.id} className="row">
-            <span>
-              <strong>{o.name}</strong>
-              <br />
-              <span className="small muted">
-                {o.description} {o.leadDays} days&apos; notice.
+          <div key={o.id} className="offer-card" data-selected={o.id === item}>
+            {o.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="offer-photo" src={o.photo} alt={o.name} loading="lazy" />
+            ) : (
+              <span className="offer-photo offer-photo-empty" style={{ background: listing.colour }} aria-hidden="true">
+                {listing.initials}
               </span>
-            </span>
-            <span className="num" style={{ fontWeight: 700 }}>
-              {formatRand(o.priceCents)}
+            )}
+            <span className="offer-body">
+              <strong>{o.name}</strong>
+              <span className="small muted">{o.description}</span>
+              <span className="offer-foot">
+                <strong className="num">{formatRand(o.priceCents)}</strong>
+                <span className="small muted">{o.leadDays} days&apos; notice</span>
+              </span>
+              {listing.orderable && (
+                <Link href={`/shop/${listing.slug}?item=${o.id}${date ? `&date=${date}` : ""}#order`} className="btn btn-outline offer-choose" scroll={false}>
+                  {o.id === item ? "Chosen" : "Choose"}
+                </Link>
+              )}
             </span>
           </div>
         ))}
@@ -93,28 +102,13 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
               {error || problem}
             </p>
           )}
-          <form method="get" action={`/shop/${listing.slug}`} className="order-pick">
-            <div className="field">
-              <label htmlFor="item">What would you like?</label>
-              <select className="input" id="item" name="item" defaultValue={item ?? ""} required>
-                <option value="" disabled>
-                  Choose an item
-                </option>
-                {listing.offerings.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name} · {formatRand(o.priceCents)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="date">When do you need it?</label>
-              <input className="input" id="date" name="date" type="date" min={minDate} defaultValue={date ?? ""} required />
-            </div>
-            <button className="btn btn-outline btn-wide" type="submit" data-tour="see-terms">
-              See my terms
-            </button>
-          </form>
+          <TermsPicker
+            slug={listing.slug}
+            options={listing.offerings.map((o) => ({ id: o.id, label: `${o.name} · ${formatRand(o.priceCents)}` }))}
+            item={item}
+            date={date}
+            minDates={Object.fromEntries(listing.offerings.map((o) => [o.id, earliestDate(o, today)]))}
+          />
 
           {terms && offering && (
             <div className="terms" data-tour="customer-terms">

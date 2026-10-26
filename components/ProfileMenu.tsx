@@ -30,7 +30,7 @@ export function ProfileMenu({ name, email, roleLabel, view, canSwitch, isOwner }
     .join("") || "?";
   return (
     <div className="profile" ref={ref}>
-      <button type="button" className="profile-button" aria-haspopup="menu" aria-expanded={open} aria-label={`Account: ${name}`} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="profile-button" data-open={open} aria-haspopup="menu" aria-expanded={open} aria-label={`Account: ${name}`} onClick={() => setOpen((o) => !o)}>
         {initials}
       </button>
       {open && (
@@ -51,12 +51,17 @@ export function ProfileMenu({ name, email, roleLabel, view, canSwitch, isOwner }
           </div>
           {canSwitch && (
             <Link href={view === "owner" ? "/shop" : "/home"} className="profile-item" role="menuitem" onClick={() => setOpen(false)}>
-              {view === "owner" ? "Switch to customer view" : "Switch to business dashboard"}
+<svg className="profile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3" /></svg>
+              <span>
+                {view === "owner" ? "Switch to customer view" : "Switch to business dashboard"}
+                <span className="profile-hint">{view === "owner" ? "Order as a customer" : "Back to Lerato's dashboard"}</span>
+              </span>
             </Link>
           )}
           {isOwner && view === "owner" && (
             <Link href="/settings" className="profile-item" role="menuitem" onClick={() => setOpen(false)}>
-              Settings
+<svg className="profile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+              <span>Settings</span>
             </Link>
           )}
           <form action={logout}>

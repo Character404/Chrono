@@ -2761,3 +2761,278 @@ details.more[open] > summary::before {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
 }
+
+/* Pointer kind is chosen by the tour, not by the device's media query. */
+.tour-pointer[data-kind="cursor"] .tp-cursor {
+  display: block;
+}
+
+.tour-pointer[data-kind="cursor"] .tp-touch {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.tour-pointer[data-kind="cursor"][data-pressing="true"] .tp-touch {
+  border-color: rgba(255, 183, 3, 0.9);
+}
+
+.tour-pointer[data-kind="touch"] .tp-cursor {
+  display: none;
+}
+
+.tour-pointer[data-kind="touch"] .tp-touch {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  background: rgba(255, 255, 255, 0.38);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Gentle fade as pages change. */
+@media (prefers-reduced-motion: no-preference) {
+  .shell-app > main {
+    animation: page-in 260ms var(--ease) both;
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+}
+
+/* ---------- Profile menu, polished ---------- */
+.profile-button {
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+}
+
+.profile-button:hover,
+.profile-button[data-open="true"] {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+.profile-menu {
+  padding: 0.45rem;
+  border-radius: 20px;
+  transform-origin: top right;
+  animation: menu-in 180ms var(--ease) both;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+
+.profile-who {
+  margin: 0 0 0.4rem;
+  padding: 0.85rem;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0f2a30, #174850);
+  color: #fff;
+}
+
+.profile-who .small.muted {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.profile-who .badge {
+  background: rgba(255, 183, 3, 0.18);
+  color: #ffd166;
+}
+
+.profile-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+}
+
+.profile-item {
+  gap: 0.7rem;
+  padding: 0.75rem 0.8rem;
+  align-items: flex-start;
+}
+
+.profile-icon {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  color: var(--muted);
+}
+
+.profile-hint {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.profile-menu form {
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Customer side, polished ---------- */
+.shop-hello {
+  margin: 0.25rem 0 0.1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.featured-card {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  min-height: 16rem;
+  margin-bottom: 0.5rem;
+  border: 0;
+}
+
+.featured-img,
+.biz-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 600ms var(--ease);
+}
+
+.featured-card:hover .featured-img {
+  transform: scale(1.03);
+}
+
+.featured-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 22, 26, 0) 25%, rgba(8, 22, 26, 0.88) 100%);
+}
+
+.featured-text,
+.biz-hero-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 0.3rem;
+  justify-items: start;
+  padding: 1.25rem 1.3rem;
+  color: #fff;
+}
+
+.featured-name,
+.biz-hero-name {
+  margin: 0;
+  font-size: clamp(1.5rem, 6vw, 2.1rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.featured-tagline {
+  font-size: 0.98rem;
+  opacity: 0.92;
+}
+
+.featured-meta {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.biz-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 15rem;
+  margin: 0.75rem 0 0.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+@media (min-width: 960px) {
+  .featured-card {
+    min-height: 20rem;
+  }
+  .biz-hero {
+    min-height: 19rem;
+  }
+}
+
+.offer-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .offer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.offer-card {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.offer-card[data-selected="true"] {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+.offer-photo {
+  width: 100%;
+  height: 100%;
+  min-height: 7.5rem;
+  object-fit: cover;
+}
+
+.offer-photo-empty {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 850;
+  font-size: 1.3rem;
+}
+
+.offer-body {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding: 0.85rem 0.95rem;
+}
+
+.offer-foot {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+.offer-choose {
+  justify-self: start;
+  margin-top: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.88rem;
+}
+
+.listing-card-row .badge {
+  align-self: start;
+}
