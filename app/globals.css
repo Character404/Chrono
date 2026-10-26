@@ -2241,3 +2241,21 @@ details.more[open] > summary::before {
 .autotour[data-floating="true"] {
   transition: none;
 }
+
+/* Tour button with Try the demo underneath. */
+.demo-entry {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.demo-entry form {
+  margin: 0;
+}
+
+/* Buttons with an icon, like Print summary. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
