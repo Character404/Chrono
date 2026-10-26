@@ -140,6 +140,10 @@ export function TourHost() {
   // A pointer (fingertip on phones, cursor on laptops) that travels to each button and presses it.
   const pointerElRef = useRef<HTMLDivElement | null>(null);
   const pointerRef = useRef({ x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false });
+  // The element the pointer is heading for; its live centre is the pointer's target every frame.
+  const trackRef = useRef<HTMLElement | null>(null);
+  // Laptops and desktops get a cursor; phones and tablets get a fingertip.
+  const [pointerKind, setPointerKind] = useState<"cursor" | "touch">("touch");
 
   useEffect(() => {
     if (window.__chronoTourAudio) window.__chronoTourAudio.muted = muted;
@@ -170,25 +174,48 @@ export function TourHost() {
     const go = (path: string) => {
       if (window.location.pathname !== path) router.push(path);
     };
+    /** True when the whole element is on screen and not hidden behind the phone's bottom navigation. */
+    const fullyVisible = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      if (el.closest(".tabs")) return r.top >= 0 && r.bottom <= window.innerHeight;
+      const nav = document.querySelector(".tabs");
+      const navTop = nav && getComputedStyle(nav).position === "fixed" ? nav.getBoundingClientRect().top : window.innerHeight;
+      return r.top >= 8 && r.bottom <= navTop - 8;
+    };
+    /** Resolves once the element has stopped moving (smooth scrolling has finished). */
+    const settled = async (el: HTMLElement) => {
+      let last = el.getBoundingClientRect().top;
+      for (let i = 0; i < 20; i++) {
+        await sleep(60);
+        const now = el.getBoundingClientRect().top;
+        if (Math.abs(now - last) < 0.5) return;
+        last = now;
+      }
+    };
+
     const press = async (selector: string) => {
       const el = await waitFor(() => document.querySelector<HTMLElement>(selector), 6000);
       if (!el || cancelledRef.current) return false;
       pressTargetRef.current = el;
       const ptr = pointerRef.current;
-      let r = el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > window.innerHeight) {
+      // Bring the button fully into view first, and wait for the scroll to finish.
+      if (!fullyVisible(el)) {
         el.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
-        await sleep(450);
-        r = el.getBoundingClientRect();
+        await sleep(120);
       }
-      ptr.tx = r.left + r.width / 2;
-      ptr.ty = r.top + r.height / 2;
+      await settled(el);
       if (Number.isNaN(ptr.x)) {
         ptr.x = window.innerWidth * 0.7;
-        ptr.y = window.innerHeight * 0.9;
+        ptr.y = window.innerHeight * 0.85;
       }
+      // The pointer follows the button's live position every frame (see the animation loop),
+      // so it lands exactly on it even if the page shifts.
+      trackRef.current = el;
       ptr.visible = true;
-      await waitFor(() => Math.hypot(ptr.tx - ptr.x, ptr.ty - ptr.y) < 3, 1200);
+      await waitFor(() => {
+        const r = el.getBoundingClientRect();
+        return Math.hypot(r.left + r.width / 2 - ptr.x, r.top + r.height / 2 - ptr.y) < 1.5;
+      }, 1600);
       if (cancelledRef.current) return false;
       const node = pointerElRef.current;
       if (node) node.dataset.pressing = "true";
@@ -196,6 +223,7 @@ export function TourHost() {
       el.click();
       await sleep(180);
       if (node) node.dataset.pressing = "false";
+      if (trackRef.current === el) trackRef.current = null;
       await sleep(350);
       if (pressTargetRef.current === el) pressTargetRef.current = null;
       return true;
@@ -219,6 +247,8 @@ export function TourHost() {
       setEndCard(false);
       endCardRef.current = false;
       pointerRef.current = { x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false };
+      trackRef.current = null;
+      setPointerKind(window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.innerWidth >= 900 ? "cursor" : "touch");
 
       const here = (path: string) => window.location.pathname === path;
       const daysFromToday = (n: number) => {
@@ -419,8 +449,14 @@ export function TourHost() {
 
         const ptr = pointerRef.current;
         const pointerNode = pointerElRef.current;
+        const tracked = trackRef.current;
+        if (tracked?.isConnected) {
+          const r = tracked.getBoundingClientRect();
+          ptr.tx = r.left + r.width / 2;
+          ptr.ty = r.top + r.height / 2;
+        }
         if (pointerNode && !Number.isNaN(ptr.x)) {
-          const pk = k === 1 ? 1 : 0.16;
+          const pk = k === 1 ? 1 : 0.2;
           ptr.x = glide(ptr.x, ptr.tx, pk);
           ptr.y = glide(ptr.y, ptr.ty, pk);
           pointerNode.style.transform = `translate(${ptr.x.toFixed(1)}px, ${ptr.y.toFixed(1)}px)`;
@@ -462,7 +498,7 @@ export function TourHost() {
         </div>
       )}
       <div className="tour-spot" aria-hidden="true" ref={spotRef} data-on="false" />
-      <div className="tour-pointer" aria-hidden="true" ref={pointerElRef} data-visible="false" data-pressing="false">
+      <div className="tour-pointer" aria-hidden="true" ref={pointerElRef} data-visible="false" data-pressing="false" data-kind={pointerKind}>
         <span className="tp-touch" />
         <svg className="tp-cursor" viewBox="0 0 24 24" width="28" height="28">
           <path d="M4 2.5l15 11.2-6.4 1.1 3.7 6.7-2.9 1.6-3.7-6.8L4.9 20.6z" fill="#0c2228" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />

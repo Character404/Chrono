@@ -1,21 +1,47 @@
 import Link from "next/link";
-import { LISTINGS } from "@/lib/demo/listings";
+import { requireUser } from "@/lib/auth/guards";
+import { customerDisplayName } from "@/lib/data/marketplace";
+import { coverFor, LISTINGS } from "@/lib/demo/listings";
 import { formatRand } from "@/lib/engine";
 
 export const dynamic = "force-dynamic";
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const user = await requireUser();
+  const first = customerDisplayName(user).split(" ")[0];
+  const featured = LISTINGS.find((l) => l.orderable);
+  const others = LISTINGS.filter((l) => !l.orderable);
+  const from = (prices: number[]) => formatRand(Math.min(...prices));
   return (
     <main className="page-narrow">
-      <h1 className="h1">Order from local businesses</h1>
+      <p className="shop-hello">Hi {first}</p>
+      <h1 className="h1" style={{ marginTop: 0 }}>
+        Order from local businesses
+      </h1>
+
+      {featured && (
+        <Link href={`/shop/${featured.slug}`} className="featured-card listing-card" data-tour="featured-business">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="featured-img" src={coverFor(featured)} alt={`${featured.name}: catering buffet`} />
+          <span className="featured-shade" aria-hidden="true" />
+          <span className="featured-text">
+            <span className="badge badge-SAFE">Orders open</span>
+            <strong className="featured-name">{featured.name}</strong>
+            <span className="featured-tagline">{featured.tagline}</span>
+            <span className="featured-meta">
+              {featured.kind} · {featured.area} · From {from(featured.offerings.map((o) => o.priceCents))}
+            </span>
+          </span>
+        </Link>
+      )}
+
+      <h2 className="h2">More businesses</h2>
       <div className="listing-grid">
-        {LISTINGS.map((l) => {
-          const from = Math.min(...l.offerings.map((o) => o.priceCents));
-          return (
-            <Link key={l.slug} href={`/shop/${l.slug}`} className="listing-card listing-card-cover">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="listing-cover" src={`/listings/${l.slug}.svg`} alt="" loading="lazy" />
-              <span className="listing-card-row">
+        {others.map((l) => (
+          <Link key={l.slug} href={`/shop/${l.slug}`} className="listing-card listing-card-cover">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="listing-cover" src={coverFor(l)} alt="" loading="lazy" />
+            <span className="listing-card-row">
               <span className="listing-avatar" style={{ background: l.colour }} aria-hidden="true">
                 {l.initials}
               </span>
@@ -24,15 +50,12 @@ export default function ShopPage() {
                 <span className="small muted">
                   {l.kind} · {l.area}
                 </span>
-                <span className="small">From {formatRand(from)}</span>
-                <span className={`badge ${l.orderable ? "badge-SAFE" : ""}`} style={{ justifySelf: "start", marginTop: "0.3rem" }}>
-                  {l.orderable ? "Orders open" : "Sample listing"}
-                </span>
+                <span className="small">From {from(l.offerings.map((o) => o.priceCents))}</span>
               </span>
-              </span>
-            </Link>
-          );
-        })}
+              <span className="badge">Sample</span>
+            </span>
+          </Link>
+        ))}
       </div>
     </main>
   );
