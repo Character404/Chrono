@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * The 90-second narrated demo. It lives in the root layout, so it keeps running
+ * The narrated demo tour. It lives in the root layout, so it keeps running
  * while it moves between pages: login → sign-up → demo home → the wedding order.
- * Nothing runs unless someone taps "Watch the 90-second tour".
+ * Nothing runs unless someone taps "Watch the tour".
  */
 
 export interface TourScriptStep {
@@ -35,22 +35,26 @@ const PAUSE_MS = 60;
  * The narration: BinaryBros' own recorded clips in public/tour-audio, played as recorded
  * (never sped up or cut). Lengths in seconds, used only if a clip can't play.
  */
-const CLIP_SECONDS = [6.11, 1.65, 4.21, 4.99, 11.15, 5.96, 8.28, 8.05, 4.83, 6.19, 5.64, 4.28, 3.24, 6.84, 4.21];
+const CLIP_SECONDS = [6.11, 2.51, 4.21, 4.99, 11.15, 5.96, 5.88, 4.52, 5.25, 6.69, 4.44, 5.64, 4.28, 3.97, 4.36, 7.55, 4.75, 6.84, 4.21];
 const CLIP_LABELS = [
   "Welcome to Chrono",
-  "Registering a business",
+  "Register as a business or a customer",
   "Lerato's catering business in Soshanguve",
   "Her dashboard",
   "Thabo's wedding order",
   "The forecast: a potential cash shortfall",
   "Why: costs, Thabo's payments and upcoming expenses",
   "Applying the recommended deposit",
-  "Red to green",
-  "Quote in English or Sepedi, shared on WhatsApp",
-  "Customers: how each customer pays",
+  "Shortfall resolved",
+  "Quotes and invoices on WhatsApp, in English or Sepedi",
+  "New order: orders placed outside Chrono",
+  "Customers: payment history",
   "Payments: regular commitments",
-  "Monthly summary",
-  "Print the monthly summary",
+  "Summary: view and print",
+  "Customers order through Chrono",
+  "Chrono sets Sipho's deposit before he orders",
+  "Lerato reviews and approves",
+  "Know before you commit",
   "Chrono by BinaryBros",
 ];
 
@@ -216,24 +220,47 @@ export function TourHost() {
       endCardRef.current = false;
       pointerRef.current = { x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false };
 
+      const here = (path: string) => window.location.pathname === path;
+      const daysFromToday = (n: number) => {
+        const d = new Date();
+        d.setDate(d.getDate() + n);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      };
+
       go("/login");
-      await waitFor(() => window.location.pathname === "/login", 6000);
+      await waitFor(() => here("/login"), 6000);
       if (!(await say(1, "intro"))) return;
 
-      void press('a[href="/signup"].btn');
-      if (!(await say(2, "signup-process"))) return;
+      // Clip 2: register as a business or a customer.
+      void (async () => {
+        await press('a[href="/signup"].btn');
+        await waitFor(() => here("/signup"), 6000);
+        focusNow("role-toggle");
+        await sleep(600);
+        await press('[data-tour="role-customer"]');
+      })();
+      if (!(await say(2))) return;
 
       // Clip 3 plays while we tap back to login and open the demo.
       const opened = (async () => {
         await press('[data-tour="login-link"]');
-        await waitFor(() => window.location.pathname === "/login", 6000);
+        await waitFor(() => here("/login"), 6000);
         focusNow("demo");
         await press('[data-tour="demo"] button');
       })();
       if (!(await say(3))) return;
       await opened;
-      await waitFor(() => window.location.pathname === "/home", 20000);
-      if (!(await say(4, "home-hero"))) return;
+      await waitFor(() => here("/home"), 20000);
+
+      // Clip 4: walk down the whole dashboard.
+      void (async () => {
+        for (const part of ["home-hero", "home-waiting", "home-accepted", "home-coming"]) {
+          if (cancelledRef.current) return;
+          focusNow(part);
+          await sleep(1250);
+        }
+      })();
+      if (!(await say(4))) return;
 
       // Clip 5 plays while the wedding order opens.
       void press('a[data-tour="wedding"]');
@@ -241,10 +268,8 @@ export function TourHost() {
       if (!(await say(6, "verdict"))) return;
       if (!(await say(7, "why"))) return;
 
-      // Clip 8: tap the deposit as the narration says "We apply that amount here" (about 5.6s in),
-      // so the verdict turns green during "...and check how it changes the forecast."
-      // The pointer starts moving a little earlier, so its tap still lands on "We apply that amount here".
-      const fix = { secondsBeforeEnd: 3.3, run: () => void press('[data-tour="fix"] button') };
+      // Clip 8: the tap lands on "We apply it here" (about 3.5s in).
+      const fix = { secondsBeforeEnd: 1.67, run: () => void press('[data-tour="fix"] button') };
       if (!(await say(8, "fix", fix))) return;
       await waitFor(() => document.querySelector(".verdict-SAFE"), 8000);
       if (!(await say(9, "verdict"))) return;
@@ -256,24 +281,69 @@ export function TourHost() {
       })();
       if (!(await say(10))) return;
 
+      // Clips 11 to 14: the other pages, then print the summary.
+      void press('.tabs a[href="/orders/new"]');
+      if (!(await say(11, "new-order"))) return;
       void press('.tabs a[href="/customers"]');
-      if (!(await say(11, "customers-list"))) return;
+      if (!(await say(12, "customers-list"))) return;
       void press('.tabs a[href="/commitments"]');
-      if (!(await say(12, "payments-list"))) return;
-      void press('.tabs a[href="/summary"]');
-      if (!(await say(13, "summary-hero"))) return;
-
-      // Clip 14: print the monthly summary.
+      if (!(await say(13, "payments-list"))) return;
       void (async () => {
+        await press('.tabs a[href="/summary"]');
+        await waitFor(() => here("/summary"), 6000);
+        focusNow("summary-hero");
+        await sleep(500);
         await press('[data-tour="print-btn"]');
         focusNow("print-preview");
       })();
       if (!(await say(14))) return;
+
+      // Clip 15: switch to the customer view and open Lerato's Kitchen.
+      void (async () => {
+        focusNow(undefined);
+        await press(".profile-button");
+        await press('a.profile-item[href="/shop"]');
+        await waitFor(() => here("/shop"), 6000);
+        await press('a.listing-card[href="/shop/leratos-kitchen"]');
+      })();
+      if (!(await say(15, "order-panel"))) return;
+
+      // Clip 16: Sipho picks the wedding and a date; Chrono sets his terms; he places the order.
+      void (async () => {
+        await waitFor(() => here("/shop/leratos-kitchen"), 6000);
+        const item = document.querySelector<HTMLSelectElement>("#item");
+        const date = document.querySelector<HTMLInputElement>("#date");
+        if (item) item.value = "wedding";
+        if (date) date.value = daysFromToday(8);
+        focusNow("order-panel");
+        await press('[data-tour="see-terms"]');
+        await waitFor(() => document.querySelector('[data-tour="customer-terms"]'), 8000);
+        focusNow("customer-terms");
+        await sleep(2400);
+        await press('[data-tour="place-order"] button');
+      })();
+      if (!(await say(16))) return;
+
+      // Clip 17: back to Lerato, who opens the order and approves it.
+      void (async () => {
+        await waitFor(() => here("/shop/orders"), 8000);
+        await press(".profile-button");
+        await press('a.profile-item[href="/home"]');
+        await waitFor(() => here("/home"), 6000);
+        focusNow("chrono-order");
+        await sleep(400);
+        await press('a[data-tour="chrono-order"]');
+        await waitFor(() => document.querySelector('[data-tour="accept-form"]'), 8000);
+        await press('[data-tour="accept-form"] button');
+      })();
+      if (!(await say(17))) return;
+
       focusNow(undefined);
       pointerRef.current.visible = false;
+      if (!(await say(18))) return;
       endCardRef.current = true;
       setEndCard(true);
-      if (!(await say(15))) return;
+      if (!(await say(19))) return;
       setFinished(true);
       (window as Window & { __chronoTourActive?: boolean }).__chronoTourActive = false;
     };
@@ -429,7 +499,7 @@ export function TourScene({ name, steps }: { name: string; steps: TourScriptStep
 }
 
 /** Starts the tour. The tap also unlocks audio playback (needed on phones). */
-export function AutoTourButton({ className = "btn btn-wide autotour-start", label = "▶ Watch a 90-second tour" }: { className?: string; label?: string }) {
+export function AutoTourButton({ className = "btn btn-wide autotour-start", label = "▶ Watch the tour" }: { className?: string; label?: string }) {
   const start = () => {
     try {
       const audio = tourAudio();

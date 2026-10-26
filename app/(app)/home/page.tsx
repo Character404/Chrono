@@ -132,9 +132,9 @@ export default async function HomePage() {
       {pending.length === 0 ? (
         <p className="muted">No orders waiting. When a customer asks for something, check it here before you say yes.</p>
       ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <div data-tour="home-waiting" className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {pending.map(({ order, verdict }) => (
-            <Link key={order.id} href={`/orders/${order.id}`} className="row" data-tour={demoWedding && order.id === demoWedding.id ? "wedding" : undefined}>
+            <Link key={order.id} href={`/orders/${order.id}`} className="row" data-tour={demoWedding && order.id === demoWedding.id ? "wedding" : viaChrono.has(order.id) ? "chrono-order" : undefined}>
               <span>
                 <strong>{order.title}</strong>
                 <br />
@@ -157,7 +157,7 @@ export default async function HomePage() {
       {accepted.length > 0 && (
         <>
           <h2 className="h2">Accepted orders</h2>
-          <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <div data-tour="home-accepted" className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
             {accepted.map((o) => (
               <Link key={o.id} href={`/orders/${o.id}`} className="row">
                 <span>
@@ -175,7 +175,7 @@ export default async function HomePage() {
       {upcoming.length === 0 ? (
         <p className="muted">Nothing due in the next 30 days.</p>
       ) : (
-        <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <div data-tour="home-coming" className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
           {upcoming.map((e) => (
             <div key={`${e.refId}-${e.date}`} className="row">
               <span>

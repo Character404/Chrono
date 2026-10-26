@@ -10,7 +10,7 @@ export default async function NewOrderPage() {
   const { business } = await requireBusiness();
   const ctx = await createRepo(prisma).loadContext(business, todayInJohannesburg());
   return (
-    <main className="page-narrow">
+    <main className="page-narrow" data-tour="new-order">
       <h1 className="h1">Check a new order</h1>
       <OrderWizard ctx={ctx} />
     </main>

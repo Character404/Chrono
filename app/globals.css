@@ -2725,3 +2725,39 @@ details.more[open] > summary::before {
   border-color: var(--brand);
   background: color-mix(in srgb, var(--brand) 10%, var(--surface));
 }
+
+/* ---------- Business covers ---------- */
+.listing-card-cover {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.listing-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.listing-card-row {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.9rem 1.1rem 1rem;
+}
+
+.listing-card-cover:hover .listing-cover {
+  filter: saturate(1.1);
+}
+
+.listing-hero {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  margin-top: 0.75rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}

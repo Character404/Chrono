@@ -7,13 +7,13 @@ export function SignupRole() {
   const [role, setRole] = useState<"OWNER" | "CUSTOMER">("OWNER");
   return (
     <>
-      <div className="role-toggle" role="radiogroup" aria-label="Account type">
-        <label className="role-option" data-checked={role === "OWNER"}>
+      <div className="role-toggle" role="radiogroup" aria-label="Account type" data-tour="role-toggle">
+        <label className="role-option" data-checked={role === "OWNER"} data-tour="role-owner">
           <input type="radio" name="role" value="OWNER" checked={role === "OWNER"} onChange={() => setRole("OWNER")} />
           <strong>I run a business</strong>
           <span className="small muted">Check orders before you accept them.</span>
         </label>
-        <label className="role-option" data-checked={role === "CUSTOMER"}>
+        <label className="role-option" data-checked={role === "CUSTOMER"} data-tour="role-customer">
           <input type="radio" name="role" value="CUSTOMER" checked={role === "CUSTOMER"} onChange={() => setRole("CUSTOMER")} />
           <strong>I&apos;m a customer</strong>
           <span className="small muted">Order from businesses on Chrono.</span>

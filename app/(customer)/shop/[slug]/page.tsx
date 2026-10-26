@@ -45,6 +45,8 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
       <Link href="/shop" className="small muted">
         Back to businesses
       </Link>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="listing-hero" src={`/listings/${listing.slug}.svg`} alt={`${listing.name}: ${listing.kind.toLowerCase()} in ${listing.area}`} />
       <div className="listing-head">
         <span className="listing-avatar listing-avatar-lg" style={{ background: listing.colour }} aria-hidden="true">
           {listing.initials}
@@ -82,7 +84,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           Sample listing: ordering isn&apos;t open for this business in the prototype.
         </p>
       ) : (
-        <section className="panel" style={{ marginTop: "1.5rem" }} id="order">
+        <section className="panel" style={{ marginTop: "1.5rem" }} id="order" data-tour="order-panel">
           <h2 className="h2" style={{ marginTop: 0 }}>
             Place an order
           </h2>
@@ -109,7 +111,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
               <label htmlFor="date">When do you need it?</label>
               <input className="input" id="date" name="date" type="date" min={minDate} defaultValue={date ?? ""} required />
             </div>
-            <button className="btn btn-outline btn-wide" type="submit">
+            <button className="btn btn-outline btn-wide" type="submit" data-tour="see-terms">
               See my terms
             </button>
           </form>
@@ -134,7 +136,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                   This date is busy for {listing.name}. You can still send the order, and they&apos;ll let you know.
                 </p>
               )}
-              <form action={placeOrder} style={{ marginTop: "0.9rem" }}>
+              <form action={placeOrder} style={{ marginTop: "0.9rem" }} data-tour="place-order">
                 <input type="hidden" name="slug" value={listing.slug} />
                 <input type="hidden" name="item" value={offering.id} />
                 <input type="hidden" name="date" value={terms.eventDate} />

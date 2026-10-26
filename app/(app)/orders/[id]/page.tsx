@@ -212,7 +212,7 @@ export default async function OrderPage({
                     Decline
                   </SubmitButton>
                 </form>
-                <form action={decideOrder}>
+                <form action={decideOrder} data-tour="accept-form">
                   <input type="hidden" name="orderId" value={order.id} />
                   <input type="hidden" name="decision" value="accept" />
                   <SubmitButton className="btn" pendingLabel="Accepting…">
