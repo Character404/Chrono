@@ -86,9 +86,12 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           Prototype: steps 2 and 3 show the process we&apos;re designing; they aren&apos;t live yet. Chrono never asks for bank logins, card details or ID numbers.
         </p>
       </section>
-      <p className="small muted">
-        Already have an account? <Link href="/login">Log in</Link>
-      </p>
+      <div className="create-account">
+        <span className="small muted">Already have an account?</span>
+        <Link href="/login" className="btn btn-outline btn-wide" data-tour="login-link">
+          Log in
+        </Link>
+      </div>
     </main>
   );
 }

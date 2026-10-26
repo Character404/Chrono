@@ -225,7 +225,7 @@ export function TourHost() {
 
       // Clip 3 plays while we tap back to login and open the demo.
       const opened = (async () => {
-        await press('p a[href="/login"]');
+        await press('[data-tour="login-link"]');
         await waitFor(() => window.location.pathname === "/login", 6000);
         focusNow("demo");
         await press('[data-tour="demo"] button');
