@@ -37,6 +37,7 @@ export const DEMO_IDS = {
   wedding: "demo-order-wedding",
   cake: "demo-order-cake",
   thabo: "demo-cust-thabo",
+  sipho: "demo-cust-sipho",
 } as const;
 
 const CUSTOMERS: DemoCustomer[] = [

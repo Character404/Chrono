@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { requireBusiness } from "@/lib/auth/guards";
-import { logout } from "@/app/actions/auth";
 import { NavTabs } from "@/components/NavTabs";
-import { SubmitButton } from "@/components/SubmitButton";
+import { ProfileMenu } from "@/components/ProfileMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -15,14 +14,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <span className="wordmark-dot" aria-hidden="true" />
           Chrono
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-          <Link href="/settings" className="linkish" aria-label="Business settings">
-            Settings
-          </Link>
-        <form action={logout}>
-          <SubmitButton className="linkish linkish-danger" pendingLabel="Logging out">Log out</SubmitButton>
-        </form>
-        </div>
+        <ProfileMenu
+          name={user.isDemo ? "Lerato" : business.name}
+          email={user.isDemo ? "Demo account" : user.email}
+          roleLabel={user.isDemo ? "Demo · business owner" : "Business owner"}
+          view="owner"
+          canSwitch={user.isDemo}
+          isOwner
+        />
       </header>
       <NavTabs />
       {children}

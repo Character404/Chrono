@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signup } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/SubmitButton";
 import { PasswordInput } from "@/components/PasswordInput";
+import { SignupRole } from "@/components/SignupRole";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -21,6 +22,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
         </p>
       )}
       <form action={signup} className="panel" data-tour="signup-form">
+          <SignupRole />
         <div className="field">
           <label htmlFor="email">Email</label>
           <input className="input" id="email" name="email" type="email" autoComplete="email" required />

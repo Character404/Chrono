@@ -131,6 +131,13 @@ export default async function OrderPage({
       <div data-tour="summary">
         <OrderSummary story={story} />
       </div>
+      {row.source === "CHRONO" && (
+        <p className="via-chrono-note">
+          <span className="chip-chrono">via Chrono</span> {firstName} ordered through Chrono. Chrono set the deposit from your schedule when they ordered
+          {primary.verdict === "SAFE" ? ", so it’s ready to approve." : "."}
+          {row.note ? ` Note: “${row.note}”` : ""}
+        </p>
+      )}
 
       {statusNote && <p className="demo-flag">{statusNote}</p>}
       {error && (

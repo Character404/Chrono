@@ -56,6 +56,9 @@ model User {
   email        String    @unique
   passwordHash String
   isDemo       Boolean   @default(false)
+  /// "OWNER" runs a business; "CUSTOMER" orders from businesses on Chrono.
+  role         String    @default("OWNER")
+  name         String?
   createdAt    DateTime  @default(now())
   business     Business?
   sessions     Session[]
@@ -111,6 +114,11 @@ model Order {
   status     OrderStatus    @default(DRAFT)
   createdAt  DateTime       @default(now())
   decidedAt  DateTime?
+  /// "OWNER" when the owner entered it; "CHRONO" when a customer ordered through Chrono.
+  source     String         @default("OWNER")
+  /// The customer account that placed the order (orders placed through Chrono only).
+  customerUserId String?
+  note       String?
   business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   customer   Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   payments   OrderPayment[]
@@ -120,6 +128,7 @@ model Order {
 
   @@index([businessId, status])
   @@index([customerId])
+  @@index([customerUserId])
 }
 
 model OrderPayment {
