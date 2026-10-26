@@ -343,7 +343,11 @@ export function TourHost() {
         await waitFor(() => here("/shop/leratos-kitchen"), 6000);
         const item = document.querySelector<HTMLSelectElement>("#item");
         const date = document.querySelector<HTMLInputElement>("#date");
-        if (item) item.value = "wedding";
+        if (item) {
+          const setValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+          setValue?.call(item, "wedding");
+          item.dispatchEvent(new Event("change", { bubbles: true }));
+        }
         if (date) date.value = daysFromToday(8);
         focusNow("order-panel");
         await press('[data-tour="see-terms"]');

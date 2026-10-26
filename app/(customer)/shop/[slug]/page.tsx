@@ -103,6 +103,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
             </p>
           )}
           <TermsPicker
+            key={`${item ?? ""}|${date ?? ""}`}
             slug={listing.slug}
             options={listing.offerings.map((o) => ({ id: o.id, label: `${o.name} · ${formatRand(o.priceCents)}` }))}
             item={item}
