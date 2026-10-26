@@ -131,6 +131,9 @@ export function TourHost() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<Element | null>(null);
   const shadeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // A pointer (fingertip on phones, cursor on laptops) that travels to each button and presses it.
+  const pointerElRef = useRef<HTMLDivElement | null>(null);
+  const pointerRef = useRef({ x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false });
 
   useEffect(() => {
     if (window.__chronoTourAudio) window.__chronoTourAudio.muted = muted;
@@ -158,13 +161,37 @@ export function TourHost() {
         if (el && !cancelledRef.current) focusNow(target);
       });
     };
-    const openFold = (name: string) => {
-      const fold = document.querySelector(`[data-tour="${name}"]`);
-      if (fold instanceof HTMLDetailsElement) fold.open = true;
-    };
     const go = (path: string) => {
       if (window.location.pathname !== path) router.push(path);
     };
+    const press = async (selector: string) => {
+      const el = await waitFor(() => document.querySelector<HTMLElement>(selector), 6000);
+      if (!el || cancelledRef.current) return false;
+      const ptr = pointerRef.current;
+      let r = el.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight) {
+        el.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
+        await sleep(450);
+        r = el.getBoundingClientRect();
+      }
+      ptr.tx = r.left + r.width / 2;
+      ptr.ty = r.top + r.height / 2;
+      if (Number.isNaN(ptr.x)) {
+        ptr.x = window.innerWidth * 0.7;
+        ptr.y = window.innerHeight * 0.9;
+      }
+      ptr.visible = true;
+      await waitFor(() => Math.hypot(ptr.tx - ptr.x, ptr.ty - ptr.y) < 3, 1200);
+      if (cancelledRef.current) return false;
+      const node = pointerElRef.current;
+      if (node) node.dataset.pressing = "true";
+      await sleep(170);
+      el.click();
+      await sleep(180);
+      if (node) node.dataset.pressing = "false";
+      return true;
+    };
+
     const say = async (n: number, target?: string, at?: { secondsBeforeEnd: number; run: () => void }) => {
       if (cancelledRef.current) return false;
       setClip(n);
@@ -181,20 +208,21 @@ export function TourHost() {
       setFinished(false);
       setEndCard(false);
       endCardRef.current = false;
+      pointerRef.current = { x: NaN, y: NaN, tx: NaN, ty: NaN, visible: false };
 
       go("/login");
       await waitFor(() => window.location.pathname === "/login", 6000);
       if (!(await say(1, "intro"))) return;
 
-      go("/signup");
+      void press('a[href="/signup"].btn');
       if (!(await say(2, "signup-process"))) return;
 
-      // Clip 3 plays while the demo opens.
-      go("/login");
+      // Clip 3 plays while we tap back to login and open the demo.
       const opened = (async () => {
-        const button = await waitFor(() => document.querySelector<HTMLButtonElement>('[data-tour="demo"] button'), 6000);
+        await press('p a[href="/login"]');
+        await waitFor(() => window.location.pathname === "/login", 6000);
         focusNow("demo");
-        button?.click();
+        await press('[data-tour="demo"] button');
       })();
       if (!(await say(3))) return;
       await opened;
@@ -202,30 +230,35 @@ export function TourHost() {
       if (!(await say(4, "home-hero"))) return;
 
       // Clip 5 plays while the wedding order opens.
-      document.querySelector<HTMLAnchorElement>('a[data-tour="wedding"]')?.click();
+      void press('a[data-tour="wedding"]');
       if (!(await say(5, "summary"))) return;
       if (!(await say(6, "verdict"))) return;
       if (!(await say(7, "why"))) return;
 
       // Clip 8: tap the deposit as the narration says "We apply that amount here" (about 5.6s in),
       // so the verdict turns green during "...and check how it changes the forecast."
-      const fix = { secondsBeforeEnd: 2.45, run: () => document.querySelector<HTMLButtonElement>('[data-tour="fix"] button')?.click() };
+      // The pointer starts moving a little earlier, so its tap still lands on "We apply that amount here".
+      const fix = { secondsBeforeEnd: 3.3, run: () => void press('[data-tour="fix"] button') };
       if (!(await say(8, "fix", fix))) return;
       await waitFor(() => document.querySelector(".verdict-SAFE"), 8000);
       if (!(await say(9, "verdict"))) return;
 
-      openFold("share");
-      document.querySelector<HTMLInputElement>('[data-tour="lang-nso"] input')?.click();
-      if (!(await say(10, "doc-preview"))) return;
+      void (async () => {
+        await press('[data-tour="share"] > summary');
+        await press('[data-tour="lang-nso"]');
+        focusNow("doc-preview");
+      })();
+      if (!(await say(10))) return;
 
-      go("/customers");
+      void press('.tabs a[href="/customers"]');
       if (!(await say(11, "customers-list"))) return;
-      go("/commitments");
+      void press('.tabs a[href="/commitments"]');
       if (!(await say(12, "payments-list"))) return;
-      go("/summary");
+      void press('.tabs a[href="/summary"]');
       if (!(await say(13, "summary-hero"))) return;
 
       focusNow(undefined);
+      pointerRef.current.visible = false;
       if (!(await say(14))) return;
       endCardRef.current = true;
       setEndCard(true);
@@ -303,6 +336,16 @@ export function TourHost() {
           });
         }
 
+        const ptr = pointerRef.current;
+        const pointerNode = pointerElRef.current;
+        if (pointerNode && !Number.isNaN(ptr.x)) {
+          const pk = k === 1 ? 1 : 0.16;
+          ptr.x = glide(ptr.x, ptr.tx, pk);
+          ptr.y = glide(ptr.y, ptr.ty, pk);
+          pointerNode.style.transform = `translate(${ptr.x.toFixed(1)}px, ${ptr.y.toFixed(1)}px)`;
+          pointerNode.dataset.visible = ptr.visible && !endCardRef.current ? "true" : "false";
+        }
+
         pos.top = glide(pos.top, targetTop, k);
         pos.left = glide(pos.left, targetLeft, k);
         panel.dataset.floating = "true";
@@ -347,6 +390,12 @@ export function TourHost() {
           }}
         />
       ))}
+      <div className="tour-pointer" aria-hidden="true" ref={pointerElRef} data-visible="false" data-pressing="false">
+        <span className="tp-touch" />
+        <svg className="tp-cursor" viewBox="0 0 24 24" width="28" height="28">
+          <path d="M4 2.5l15 11.2-6.4 1.1 3.7 6.7-2.9 1.6-3.7-6.8L4.9 20.6z" fill="#0c2228" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
+        </svg>
+      </div>
       <div className="autotour" role="region" aria-label="Narrated tour" ref={panelRef} data-floating="false">
         <div className="autotour-progress" aria-hidden="true">
           <span style={{ width: `${finished ? 100 : (clip / CLIP_SECONDS.length) * 100}%` }} />

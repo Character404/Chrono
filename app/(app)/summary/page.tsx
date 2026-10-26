@@ -106,7 +106,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
         <p className="label" style={{ marginTop: 0 }}>
           {monthName}&apos;s summary
         </p>
-        <PdfShare path={`/api/documents/summary?month=${month}`} label="Print summary" mode="print" shareText={`${business.name}: summary for ${name}`} />
+        <PdfShare path={`/api/documents/summary?month=${month}`} label="Print" mode="print" shareText={`${business.name}: summary for ${name}`} />
       </section>
     </main>
   );

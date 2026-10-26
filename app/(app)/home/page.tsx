@@ -10,6 +10,8 @@ import { DEMO_IDS, isDemoRecord } from "@/lib/demo/demo-data";
 import { CountUp } from "@/components/CountUp";
 import { AutoTourButton } from "@/components/AutoTour";
 import { onboardingComplete, onboardingSteps } from "@/lib/data/onboarding";
+import { demoLogin } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,11 @@ export default async function HomePage() {
       {showTour && (
         <div className="demo-entry demo-entry-top">
           <AutoTourButton />
+          <form action={demoLogin}>
+            <SubmitButton className="btn btn-wide" pendingLabel="Opening the demo">
+              Try the demo
+            </SubmitButton>
+          </form>
         </div>
       )}
       <div className="col-main">
@@ -95,6 +102,23 @@ export default async function HomePage() {
         </div>
       )}
 
+      {accepted.length > 0 && (
+        <>
+          <h2 className="h2">Accepted orders</h2>
+          <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
+            {accepted.map((o) => (
+              <Link key={o.id} href={`/orders/${o.id}`} className="row">
+                <span>
+                  {o.title}
+                  <br />
+                  <span className="small muted">{customerName(o.customerId)}</span>
+                </span>
+                <span className="num">{formatRand(o.valueCents)}</span>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
       <h2 className="h2">Coming up</h2>
       {upcoming.length === 0 ? (
         <p className="muted">Nothing due in the next 30 days.</p>
@@ -157,23 +181,6 @@ export default async function HomePage() {
       )}
 
 
-      {accepted.length > 0 && (
-        <>
-          <h2 className="h2">Accepted orders</h2>
-          <div className="panel rows" style={{ paddingTop: 0, paddingBottom: 0 }}>
-            {accepted.map((o) => (
-              <Link key={o.id} href={`/orders/${o.id}`} className="row">
-                <span>
-                  {o.title}
-                  <br />
-                  <span className="small muted">{customerName(o.customerId)}</span>
-                </span>
-                <span className="num">{formatRand(o.valueCents)}</span>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
       </div>
     </main>
   );
