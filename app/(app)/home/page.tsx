@@ -71,7 +71,7 @@ export default async function HomePage() {
         </p>
       </section>
 
-      <section className="panel" style={{ marginTop: "1rem" }}>
+      <section className="panel">
         <p className="label" style={{ marginTop: 0 }}>
           Your next 30 days, day by day
         </p>

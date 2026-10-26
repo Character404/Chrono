@@ -2446,3 +2446,56 @@ details.more[open] > summary::before {
     margin: 0;
   }
 }
+
+/* ---------- Desktop alignment ---------- */
+@media (min-width: 960px) {
+  /* The tab bar is centred on every page, at the same width as the centred pages, so their edges line up. */
+  .shell-app .tabs {
+    max-width: 52rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Home: the two buttons use the same gap as the two columns below, and the same space beneath. */
+  .demo-entry-top {
+    gap: 1.75rem;
+    margin-bottom: 1.75rem;
+  }
+
+  /* Both columns start level, and their sections share one vertical rhythm. */
+  .layout-2 .col-side > * + .h2,
+  .layout-2 .col-main > * + .h2 {
+    margin-top: 1.75rem;
+  }
+  .layout-2 .h2 {
+    margin-bottom: 0.75rem;
+  }
+  .col-main > .panel,
+  .col-main > section + section {
+    margin-top: 1.75rem;
+  }
+  .col-side > .impact {
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 960px) {
+  /* Same proportions as Home's two columns, so each button sits exactly over its column. */
+  .demo-entry-top {
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  }
+}
+
+/* One spacing rhythm: phones 1rem between stacked cards, desktop 1.75rem (the column gap) everywhere. */
+.col-main > section + section {
+  margin-top: 1rem;
+}
+
+@media (min-width: 960px) {
+  .demo-entry-top {
+    margin-bottom: 0;
+  }
+  .col-main > section + section {
+    margin-top: 1.75rem;
+  }
+}
