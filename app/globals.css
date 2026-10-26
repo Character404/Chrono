@@ -2259,3 +2259,99 @@ details.more[open] > summary::before {
   justify-content: center;
   gap: 0.5rem;
 }
+
+/* ---------- Tour: no gold box, and a pointer that presses buttons ---------- */
+.tour-focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tour-pointer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 62;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms var(--ease);
+}
+
+.tour-pointer[data-visible="true"] {
+  opacity: 1;
+}
+
+/* Phones: a fingertip */
+.tp-touch {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.38);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 160ms var(--ease);
+}
+
+.tp-touch::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  opacity: 0;
+}
+
+.tour-pointer[data-pressing="true"] .tp-touch {
+  transform: scale(0.78);
+}
+
+.tour-pointer[data-pressing="true"] .tp-touch::after {
+  animation: tp-ripple 420ms ease-out;
+}
+
+@keyframes tp-ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+/* Laptops: a cursor whose tip sits on the point */
+.tp-cursor {
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  display: none;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+  transition: transform 140ms var(--ease);
+  transform-origin: 4px 3px;
+}
+
+.tour-pointer[data-pressing="true"] .tp-cursor {
+  transform: scale(0.86);
+}
+
+@media (pointer: fine) {
+  .tp-touch {
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .tour-pointer[data-pressing="true"] .tp-touch {
+    border-color: rgba(255, 183, 3, 0.9);
+  }
+  .tp-touch::after {
+    border-color: rgba(255, 183, 3, 0.9);
+  }
+  .tp-cursor {
+    display: block;
+  }
+}
