@@ -79,7 +79,7 @@ export function DocumentShare({ orderId, kinds, businessName, previews }: { orde
         {kinds.map((kind) => (
           <div key={kind} className="grid-2">
             <button type="button" className="btn" disabled={!files[kind]} onClick={() => share(kind)}>
-              {files[kind] ? `Share ${kind} (PDF)` : "Preparing…"}
+              {files[kind] ? `Share ${kind}` : "Preparing…"}
             </button>
             <a className="btn btn-quiet" href={`/api/documents/${orderId}?type=${kind}&lang=${lang}`} target="_blank" rel="noopener noreferrer">
               Preview
